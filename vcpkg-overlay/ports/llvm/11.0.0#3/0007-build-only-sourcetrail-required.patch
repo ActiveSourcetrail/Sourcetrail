@@ -1,0 +1,290 @@
+diff --git a/clang/CMakeLists.txt b/clang/CMakeLists.txt
+index bb4b801f0..67c9f60f1 100644
+--- a/clang/CMakeLists.txt
++++ b/clang/CMakeLists.txt
+@@ -542,7 +542,7 @@ add_subdirectory(tools)
+ add_subdirectory(runtime)
+ 
+ option(CLANG_BUILD_EXAMPLES "Build CLANG example programs by default." OFF)
+-add_subdirectory(examples)
++
+ 
+ if(APPLE)
+   # this line is needed as a cleanup to ensure that any CMakeCaches with the old
+diff --git a/clang/lib/Analysis/CMakeLists.txt b/clang/lib/Analysis/CMakeLists.txt
+index 82cb00a8c..3d6c0a110 100644
+--- a/clang/lib/Analysis/CMakeLists.txt
++++ b/clang/lib/Analysis/CMakeLists.txt
+@@ -32,7 +32,7 @@ add_clang_library(clangAnalysis
+ 
+   LINK_LIBS
+   clangAST
+-  clangASTMatchers
++  
+   clangBasic
+   clangLex
+ 
+diff --git a/clang/lib/CMakeLists.txt b/clang/lib/CMakeLists.txt
+index c2b6a5a4d..6c0695c74 100644
+--- a/clang/lib/CMakeLists.txt
++++ b/clang/lib/CMakeLists.txt
+@@ -3,25 +3,25 @@ add_subdirectory(Basic)
+ add_subdirectory(Lex)
+ add_subdirectory(Parse)
+ add_subdirectory(AST)
+-add_subdirectory(ASTMatchers)
+-add_subdirectory(CrossTU)
++
++
+ add_subdirectory(Sema)
+-add_subdirectory(CodeGen)
++
+ add_subdirectory(Analysis)
+ add_subdirectory(Edit)
+-add_subdirectory(Rewrite)
+-if(CLANG_ENABLE_ARCMT)
+-  add_subdirectory(ARCMigrate)
+-endif()
++
++
++
++
+ add_subdirectory(Driver)
+ add_subdirectory(Serialization)
+ add_subdirectory(Frontend)
+-add_subdirectory(FrontendTool)
++
+ add_subdirectory(Tooling)
+-add_subdirectory(DirectoryWatcher)
+-add_subdirectory(Index)
+-if(CLANG_ENABLE_STATIC_ANALYZER)
+-  add_subdirectory(StaticAnalyzer)
+-endif()
+-add_subdirectory(Format)
+-add_subdirectory(Testing)
++
++
++
++
++
++
++
+diff --git a/clang/lib/Frontend/CMakeLists.txt b/clang/lib/Frontend/CMakeLists.txt
+index 0e23b92e2..98513d78b 100644
+--- a/clang/lib/Frontend/CMakeLists.txt
++++ b/clang/lib/Frontend/CMakeLists.txt
+@@ -1,7 +1,7 @@
+-add_subdirectory(Rewrite)
++
+ 
+ set(LLVM_LINK_COMPONENTS
+-  BitReader
++  
+   BitstreamReader
+   Option
+   ProfileData
+diff --git a/clang/lib/Serialization/CMakeLists.txt b/clang/lib/Serialization/CMakeLists.txt
+index a7c5b5e4f..881ba1784 100644
+--- a/clang/lib/Serialization/CMakeLists.txt
++++ b/clang/lib/Serialization/CMakeLists.txt
+@@ -1,5 +1,5 @@
+ set(LLVM_LINK_COMPONENTS
+-  BitReader
++  
+   BitstreamReader
+   Support
+   )
+diff --git a/clang/lib/Tooling/CMakeLists.txt b/clang/lib/Tooling/CMakeLists.txt
+index 7a58af59d..cbd500c6d 100644
+--- a/clang/lib/Tooling/CMakeLists.txt
++++ b/clang/lib/Tooling/CMakeLists.txt
+@@ -4,13 +4,13 @@ set(LLVM_LINK_COMPONENTS
+   Support
+   )
+ 
+-add_subdirectory(Core)
+-add_subdirectory(Inclusions)
+-add_subdirectory(Refactoring)
+-add_subdirectory(ASTDiff)
+-add_subdirectory(Syntax)
+-add_subdirectory(DependencyScanning)
+-add_subdirectory(Transformer)
++
++
++
++
++
++
++
+ 
+ add_clang_library(clangTooling
+   AllTUsExecution.cpp
+@@ -35,13 +35,13 @@ add_clang_library(clangTooling
+ 
+   LINK_LIBS
+   clangAST
+-  clangASTMatchers
++  
+   clangBasic
+   clangDriver
+-  clangFormat
++  
+   clangFrontend
+   clangLex
+-  clangRewrite
++  
+   clangSerialization
+-  clangToolingCore
++  
+   )
+diff --git a/clang/lib/Tooling/Core/CMakeLists.txt b/clang/lib/Tooling/Core/CMakeLists.txt
+index f7f423c52..900b4fc07 100644
+--- a/clang/lib/Tooling/Core/CMakeLists.txt
++++ b/clang/lib/Tooling/Core/CMakeLists.txt
+@@ -9,5 +9,5 @@ add_clang_library(clangToolingCore
+   clangAST
+   clangBasic
+   clangLex
+-  clangRewrite
++  
+   )
+diff --git a/llvm/lib/CMakeLists.txt b/llvm/lib/CMakeLists.txt
+index abe3ec59a..73275967e 100644
+--- a/llvm/lib/CMakeLists.txt
++++ b/llvm/lib/CMakeLists.txt
+@@ -2,36 +2,35 @@
+ # CMakeLists.txt
+ 
+ add_subdirectory(IR)
+-add_subdirectory(FuzzMutate)
+-add_subdirectory(IRReader)
+-add_subdirectory(CodeGen)
++
++
++
+ add_subdirectory(BinaryFormat)
+-add_subdirectory(Bitcode)
++
+ add_subdirectory(Bitstream)
+-add_subdirectory(DWARFLinker)
+-add_subdirectory(Extensions)
++
++
+ add_subdirectory(Frontend)
+-add_subdirectory(Transforms)
+-add_subdirectory(Linker)
+-add_subdirectory(Analysis)
+-add_subdirectory(LTO)
++
++
++
++
+ add_subdirectory(MC)
+-add_subdirectory(MCA)
+-add_subdirectory(Object)
+-add_subdirectory(ObjectYAML)
++
++
++
+ add_subdirectory(Option)
+ add_subdirectory(Remarks)
+-add_subdirectory(DebugInfo)
+-add_subdirectory(ExecutionEngine)
+-add_subdirectory(Target)
+-add_subdirectory(AsmParser)
+-add_subdirectory(LineEditor)
++
++
++
++
+ add_subdirectory(ProfileData)
+-add_subdirectory(Passes)
++
+ add_subdirectory(TextAPI)
+ add_subdirectory(ToolDrivers)
+-add_subdirectory(XRay)
+-if (LLVM_INCLUDE_TESTS)
+-  add_subdirectory(Testing)
+-endif()
+-add_subdirectory(WindowsManifest)
++
++
++
++
++
+diff --git a/llvm/lib/Frontend/CMakeLists.txt b/llvm/lib/Frontend/CMakeLists.txt
+index ea66917b8..3a8bc3f4c 100644
+--- a/llvm/lib/Frontend/CMakeLists.txt
++++ b/llvm/lib/Frontend/CMakeLists.txt
+@@ -1,2 +1,2 @@
+-add_subdirectory(OpenACC)
++
+ add_subdirectory(OpenMP)
+diff --git a/llvm/lib/Frontend/OpenMP/LLVMBuild.txt b/llvm/lib/Frontend/OpenMP/LLVMBuild.txt
+index dfabe72fc..ee2a55273 100644
+--- a/llvm/lib/Frontend/OpenMP/LLVMBuild.txt
++++ b/llvm/lib/Frontend/OpenMP/LLVMBuild.txt
+@@ -18,4 +18,4 @@
+ type = Library
+ name = FrontendOpenMP
+ parent = Frontend
+-required_libraries = Core Support TransformUtils
++required_libraries = Core Support
+diff --git a/llvm/lib/MC/CMakeLists.txt b/llvm/lib/MC/CMakeLists.txt
+index 9dca8d793..87222d679 100644
+--- a/llvm/lib/MC/CMakeLists.txt
++++ b/llvm/lib/MC/CMakeLists.txt
+@@ -67,4 +67,4 @@ add_llvm_component_library(LLVMMC
+   )
+ 
+ add_subdirectory(MCParser)
+-add_subdirectory(MCDisassembler)
++
+diff --git a/llvm/lib/MC/LLVMBuild.txt b/llvm/lib/MC/LLVMBuild.txt
+index 61911e510..4b16a8262 100644
+--- a/llvm/lib/MC/LLVMBuild.txt
++++ b/llvm/lib/MC/LLVMBuild.txt
+@@ -21,4 +21,4 @@ subdirectories = MCDisassembler MCParser
+ type = Library
+ name = MC
+ parent = Libraries
+-required_libraries = Support BinaryFormat DebugInfoCodeView
++required_libraries = Support BinaryFormat
+diff --git a/llvm/lib/ProfileData/CMakeLists.txt b/llvm/lib/ProfileData/CMakeLists.txt
+index 93eff295f..1e90c2970 100644
+--- a/llvm/lib/ProfileData/CMakeLists.txt
++++ b/llvm/lib/ProfileData/CMakeLists.txt
+@@ -15,4 +15,4 @@ add_llvm_component_library(LLVMProfileData
+   intrinsics_gen
+   )
+ 
+-add_subdirectory(Coverage)
++
+diff --git a/llvm/lib/ToolDrivers/CMakeLists.txt b/llvm/lib/ToolDrivers/CMakeLists.txt
+index 28da36bba..25d40e64d 100644
+--- a/llvm/lib/ToolDrivers/CMakeLists.txt
++++ b/llvm/lib/ToolDrivers/CMakeLists.txt
+@@ -1,2 +1,2 @@
+-add_subdirectory(llvm-dlltool)
++
+ add_subdirectory(llvm-lib)
+diff --git a/llvm/lib/ToolDrivers/llvm-dlltool/LLVMBuild.txt b/llvm/lib/ToolDrivers/llvm-dlltool/LLVMBuild.txt
+index b1f4ad90a..3b2d6d61f 100644
+--- a/llvm/lib/ToolDrivers/llvm-dlltool/LLVMBuild.txt
++++ b/llvm/lib/ToolDrivers/llvm-dlltool/LLVMBuild.txt
+@@ -18,4 +18,4 @@
+ type = Library
+ name = DlltoolDriver
+ parent = Libraries
+-required_libraries = Object Option Support
++required_libraries = Option Support
+diff --git a/llvm/lib/ToolDrivers/llvm-lib/LLVMBuild.txt b/llvm/lib/ToolDrivers/llvm-lib/LLVMBuild.txt
+index 9d117e215..cd88a7077 100644
+--- a/llvm/lib/ToolDrivers/llvm-lib/LLVMBuild.txt
++++ b/llvm/lib/ToolDrivers/llvm-lib/LLVMBuild.txt
+@@ -18,4 +18,4 @@
+ type = Library
+ name = LibDriver
+ parent = Libraries
+-required_libraries = BinaryFormat BitReader Object Option Support
++required_libraries = BinaryFormat Option Support
