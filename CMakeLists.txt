@@ -90,6 +90,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-warning-option -fcolor-diagnostics -fvisibility-inlines-hidden")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	ADD_COMPILE_OPTIONS(/MP)
+	ADD_COMPILE_OPTIONS(/utf-8)
 endif()
 
 # FIXME: necessary to fix build in Docker
