@@ -11,6 +11,12 @@ set(TREAT_WARNINGS_AS_ERRORS ON CACHE BOOL "Treat compiler warnings as errors")
 
 #set (CMAKE_VERBOSE_MAKEFILE ON)
 
+find_program(BASH_EXECUTABLE bash REQUIRED
+	PATHS $ENV{ProgramFiles}/Git/bin /usr/bin /bin
+	NO_DEFAULT_PATH
+)
+message (STATUS "Found Bash: ${BASH_EXECUTABLE}")
+
 include(cmake/add_files.cmake)
 include(cmake/create_source_groups.cmake)
 include(cmake/version.cmake)
@@ -61,16 +67,6 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	set(PLATFORM_INCLUDE "includesLinux.h")
 endif ()
-
-set (BASH "")
-if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-	execute_process(COMMAND CMD /c where bash OUTPUT_VARIABLE BASH)
-	string(REGEX REPLACE "\n$" "" BASH "${BASH}")
-endif ()
-
-message ("bash: '${BASH}'")
-
-
 
 # set Standard build type to Release
 set(CMAKE_BUILD_TYPE_INIT "Release")
@@ -482,7 +478,7 @@ if (BUILD_JAVA_LANGUAGE_PACKAGE)
 	add_custom_command(
 		TARGET ${LIB_JAVA_PROJECT_NAME}
 		PRE_BUILD
-		COMMAND ${BASH} ${PROJECT_SOURCE_DIR}/script/update_java_indexer.sh
+		COMMAND ${BASH_EXECUTABLE} ${PROJECT_SOURCE_DIR}/script/update_java_indexer.sh
 		COMMENT "updating java indexer jars"
 	)
 
@@ -517,7 +513,7 @@ if (BUILD_PYTHON_LANGUAGE_PACKAGE)
 	add_custom_command(
 		TARGET ${LIB_PYTHON_PROJECT_NAME}
 		PRE_BUILD
-		COMMAND ${BASH} ${PROJECT_SOURCE_DIR}/script/download_python_indexer.sh
+		COMMAND ${BASH_EXECUTABLE} ${PROJECT_SOURCE_DIR}/script/download_python_indexer.sh
 		COMMENT "download python indexer"
 	)
 
