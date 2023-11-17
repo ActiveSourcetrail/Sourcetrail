@@ -840,31 +840,46 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 			"${CMAKE_SOURCE_DIR}/bin/test")
 endif ()
 
-
-# symlinks for data
-message(STATUS "create symlink: "
-	"${CMAKE_SOURCE_DIR}/bin/app/data -> "
-	"${CMAKE_BINARY_DIR}/app/data"
-)
-
 if (NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
-	execute_process(
+	add_custom_command(
+		COMMENT "create symlink:"
+		TARGET ${APP_PROJECT_NAME}
+		PRE_BUILD
 		COMMAND "${CMAKE_COMMAND}" "-E" "make_directory" "${CMAKE_BINARY_DIR}/app"
 		COMMAND "${CMAKE_COMMAND}" "-E" "make_directory" "${CMAKE_BINARY_DIR}/test"
+		COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink"
+			"${CMAKE_SOURCE_DIR}/bin/app/data"
+			"${CMAKE_BINARY_DIR}/app/data"
+		COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink"
+			"${CMAKE_SOURCE_DIR}/bin/app/user"
+			"${CMAKE_BINARY_DIR}/app/user"
+		COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink"
+			"${CMAKE_SOURCE_DIR}/bin/test/data"
+			"${CMAKE_BINARY_DIR}/test/data"
+		VERBATIM
 	)
-	execute_process(
-		COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_SOURCE_DIR}/bin/app/data" "${CMAKE_BINARY_DIR}/app/data"
-		COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_SOURCE_DIR}/bin/app/user" "${CMAKE_BINARY_DIR}/app/user"
-		COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_SOURCE_DIR}/bin/test/data" "${CMAKE_BINARY_DIR}/test/data"
+else()
+	add_custom_command(
+		COMMENT "create symlink:"
+		TARGET ${APP_PROJECT_NAME}
+		PRE_BUILD
+		COMMAND "${CMAKE_COMMAND}" "-E" "make_directory" "${CMAKE_BINARY_DIR}/$<CONFIG>/app"
+		COMMAND "${CMAKE_COMMAND}" "-E" "make_directory" "${CMAKE_BINARY_DIR}/$<CONFIG>/test"
+		COMMAND "cmd.exe" "/k"
+			IF NOT EXIST "${BACKSLASHED_CMAKE_BINARY_DIR}\\$<CONFIG>\\app\\data"
+			"mklink" "/d" "/j"
+			"${BACKSLASHED_CMAKE_BINARY_DIR}\\$<CONFIG>\\app\\data"
+			"${BACKSLASHED_CMAKE_SOURCE_DIR}\\bin\\app\\data"
+		COMMAND "cmd.exe" "/k"
+			IF NOT EXIST "${BACKSLASHED_CMAKE_BINARY_DIR}\\$<CONFIG>\\app\\user" 
+			"mklink" "/d" "/j" 
+			"${BACKSLASHED_CMAKE_BINARY_DIR}\\$<CONFIG>\\app\\user"
+			"${BACKSLASHED_CMAKE_SOURCE_DIR}\\bin\\app\\user"
+		COMMAND "cmd.exe" "/k"
+			IF NOT EXIST "${BACKSLASHED_CMAKE_BINARY_DIR}\\$<CONFIG>\\test\\data" 
+			"mklink" "/d" "/j"
+			"${BACKSLASHED_CMAKE_BINARY_DIR}\\$<CONFIG>\\test\\data"
+			"${BACKSLASHED_CMAKE_SOURCE_DIR}\\bin\\test\\data"
+		VERBATIM
 	)
-else ()
-	foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
-		if (EXISTS "${BACKSLASHED_CMAKE_BINARY_DIR}\\${OUTPUTCONFIG}")
-			execute_process(
-				COMMAND "cmd.exe" "/k" "rmdir" "${BACKSLASHED_CMAKE_BINARY_DIR}\\${OUTPUTCONFIG}\\app\\data" & "mklink" "/d" "/j" "${BACKSLASHED_CMAKE_BINARY_DIR}\\${OUTPUTCONFIG}\\app\\data" "${BACKSLASHED_CMAKE_SOURCE_DIR}\\bin\\app\\data" & exit
-				COMMAND "cmd.exe" "/k" "rmdir" "${BACKSLASHED_CMAKE_BINARY_DIR}\\${OUTPUTCONFIG}\\app\\user" & "mklink" "/d" "/j" "${BACKSLASHED_CMAKE_BINARY_DIR}\\${OUTPUTCONFIG}\\app\\user" "${BACKSLASHED_CMAKE_SOURCE_DIR}\\bin\\app\\user" & exit
-				COMMAND "cmd.exe" "/k" "rmdir" "${BACKSLASHED_CMAKE_BINARY_DIR}\\${OUTPUTCONFIG}\\test\\data" & "mklink" "/d" "/j" "${BACKSLASHED_CMAKE_BINARY_DIR}\\${OUTPUTCONFIG}\\test\\data" "${BACKSLASHED_CMAKE_SOURCE_DIR}\\bin\\test\\data" & exit
-			)
-		endif()
-	endforeach()
 endif ()
