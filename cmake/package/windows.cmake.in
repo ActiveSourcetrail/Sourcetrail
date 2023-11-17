@@ -1,0 +1,125 @@
+# https://doc.qt.io/qt-5/windows-deployment.html
+
+include("@CMAKE_SOURCE_DIR@/cmake/installdirs/windows.cmake")
+
+include(CMakePrintHelpers)
+
+cmake_print_variables(CPACK_PACKAGE_FILE_NAME)
+cmake_print_variables(CPACK_PACKAGE_DIRECTORY)
+cmake_print_variables(CPACK_TOPLEVEL_DIRECTORY)
+cmake_print_variables(CPACK_TEMPORARY_DIRECTORY)
+
+set(ZIP_DIR "${CPACK_TEMPORARY_DIRECTORY}/ZipDir")
+
+file(MAKE_DIRECTORY "${ZIP_DIR}")
+
+file(GLOB arg_EXECUTABLES
+	"${CPACK_TEMPORARY_DIRECTORY}/Executables/${INSTALL_BIN_DIR}/*"
+)
+
+set(APP_PROJECT_FILE_NAME "$<TARGET_FILE_NAME:@APP_PROJECT_NAME@>")
+cmake_print_variables(APP_PROJECT_FILE_NAME)
+
+set(APP_INDEXER_FILE_NAME "$<TARGET_FILE_NAME:@APP_INDEXER_NAME@>")
+cmake_print_variables(APP_INDEXER_FILE_NAME)
+
+foreach(EXECUTABLE IN LISTS arg_EXECUTABLES)
+	if(EXECUTABLE MATCHES ".*/${APP_PROJECT_FILE_NAME}$")
+		file(COPY ${EXECUTABLE}
+			DESTINATION "${ZIP_DIR}/"
+			FOLLOW_SYMLINK_CHAIN
+		)
+	elseif(EXECUTABLE MATCHES ".*/${APP_INDEXER_FILE_NAME}$")
+		file(COPY ${EXECUTABLE}
+			DESTINATION "${ZIP_DIR}/"
+			FOLLOW_SYMLINK_CHAIN
+		)
+	endif()
+endforeach()
+
+file(GLOB EXECUTABLES
+	"${ZIP_DIR}/${APP_PROJECT_FILE_NAME}"
+	"${ZIP_DIR}/${APP_INDEXER_FILE_NAME}"
+)
+
+file(COPY "${CPACK_TEMPORARY_DIRECTORY}/Resources/${INSTALL_DATA_DIR}/data"
+	DESTINATION "${ZIP_DIR}/"
+	FOLLOW_SYMLINK_CHAIN
+)
+
+file(COPY "${CPACK_TEMPORARY_DIRECTORY}/Resources/${INSTALL_DATA_DIR}/user"
+	DESTINATION "${ZIP_DIR}/"
+	FOLLOW_SYMLINK_CHAIN
+)
+
+file(GLOB DLLs 
+	"${CPACK_TEMPORARY_DIRECTORY}/DLLs/${INSTALL_BIN_DIR}/*"
+)
+
+file(COPY ${DLLs}
+	DESTINATION "${ZIP_DIR}/"
+	FOLLOW_SYMLINK_CHAIN
+)
+
+file(COPY_FILE 
+	"${CPACK_TEMPORARY_DIRECTORY}/Qt/qt.conf"
+	"${ZIP_DIR}/qt.conf"
+)
+
+set(EXECUTABLE_OPTIONS "")
+foreach(EXECUTABLE IN LISTS EXECUTABLES)
+	list(APPEND EXECUTABLE_OPTIONS "${EXECUTABLE}")
+endforeach()
+
+cmake_path(CONVERT "@QMAKE_EXECUTABLE@" TO_CMAKE_PATH_LIST QMAKE_EXECUTABLE)
+cmake_path(GET QMAKE_EXECUTABLE PARENT_PATH QT_BIN_DIR)
+
+find_program(WINDEPLOY_EXECUTABLE
+	NAMES windeployqt
+	PATHS "${QT_BIN_DIR}"
+	REQUIRED
+)
+
+set(WORKING_DIRECTORY "${ZIP_DIR}")
+
+message(STATUS "Running Qt deploy tool for ${EXECUTABLES} in working directory '${WORKING_DIRECTORY}'")
+
+execute_process(
+	COMMAND
+		${CMAKE_COMMAND} -E env
+			PATH=${QT_BIN_DIR}
+		${WINDEPLOY_EXECUTABLE}
+			--release
+			--dir ${INSTALL_BIN_DIR}
+			--libdir ${INSTALL_LIB_DIR}
+			--plugindir ${INSTALL_PLUGINS_DIR}
+			--no-quick-import
+			--no-translations
+			--no-system-d3d-compiler
+			--no-compiler-runtime
+			--no-angle
+			--no-opengl-sw
+			--list mapping
+			--verbose 1
+			${EXECUTABLE_OPTIONS}
+	RESULT_VARIABLE result
+	WORKING_DIRECTORY
+		"${WORKING_DIRECTORY}"
+	OUTPUT_QUIET
+	COMMAND_ECHO STDOUT
+	COMMAND_ERROR_IS_FATAL ANY
+)
+
+execute_process(
+	COMMAND
+		${CMAKE_COMMAND} -E tar c
+			${CPACK_PACKAGE_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.zip
+			--format=zip
+			-- .
+	RESULT_VARIABLE result
+	WORKING_DIRECTORY
+		"${ZIP_DIR}"
+	OUTPUT_QUIET
+	COMMAND_ECHO STDOUT
+	COMMAND_ERROR_IS_FATAL ANY
+)

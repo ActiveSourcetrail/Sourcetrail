@@ -1,0 +1,103 @@
+# https://github.com/linuxdeploy/linuxdeploy-plugin-qt
+
+include("@CMAKE_SOURCE_DIR@/cmake/installdirs/linux.cmake")
+
+include(CMakePrintHelpers)
+
+cmake_print_variables(CPACK_PACKAGE_FILE_NAME)
+cmake_print_variables(CPACK_PACKAGE_DIRECTORY)
+cmake_print_variables(CPACK_TOPLEVEL_DIRECTORY)
+cmake_print_variables(CPACK_TEMPORARY_DIRECTORY)
+
+set(APP_DIR "${CPACK_TEMPORARY_DIRECTORY}/AppDir")
+
+file(MAKE_DIRECTORY "${APP_DIR}")
+
+file(GLOB arg_EXECUTABLES
+	"${CPACK_TEMPORARY_DIRECTORY}/Executables/${INSTALL_BIN_DIR}/*"
+)
+
+set(APP_PROJECT_FILE_NAME "$<TARGET_FILE_NAME:@APP_PROJECT_NAME@>")
+cmake_print_variables(APP_PROJECT_FILE_NAME)
+
+set(APP_INDEXER_FILE_NAME "$<TARGET_FILE_NAME:@APP_INDEXER_NAME@>")
+cmake_print_variables(APP_INDEXER_FILE_NAME)
+
+file(GLOB EXECUTABLES
+	"${CPACK_TEMPORARY_DIRECTORY}/Executables/${INSTALL_BIN_DIR}/${APP_PROJECT_FILE_NAME}"
+	"${CPACK_TEMPORARY_DIRECTORY}/Executables/${INSTALL_BIN_DIR}/${APP_INDEXER_FILE_NAME}"
+)
+
+file(COPY "${CPACK_TEMPORARY_DIRECTORY}/Resources/${INSTALL_DATA_DIR}/data"
+	DESTINATION "${APP_DIR}/usr/share/"
+	FOLLOW_SYMLINK_CHAIN
+)
+
+file(COPY "${CPACK_TEMPORARY_DIRECTORY}/Resources/${INSTALL_DATA_DIR}/user/projects"
+	DESTINATION "${APP_DIR}/usr/share/data/fallback/"
+	FOLLOW_SYMLINK_CHAIN
+)
+
+file(COPY "@CMAKE_SOURCE_DIR@/deployment/linux/appimage/sourcetrail-mime.xml"
+	DESTINATION "${APP_DIR}/usr/share/mime/packages/"
+	FOLLOW_SYMLINK_CHAIN
+)
+
+function(create_icons image icon_sizes icon_path)
+	foreach(icon_size ${icon_sizes})
+		set(icon_resize "${icon_size}")
+		execute_process(
+			COMMAND mkdir -p "${icon_path}/${icon_size}/apps"
+			COMMAND convert "${image}" -resize ${icon_resize} "${icon_path}/${icon_size}/apps/sourcetrail.png"
+			COMMAND_ECHO STDOUT
+			COMMAND_ERROR_IS_FATAL ANY
+		)
+	endforeach()
+endfunction()
+
+create_icons(
+	"${CPACK_TEMPORARY_DIRECTORY}/Resources/${INSTALL_DATA_DIR}/data/gui/icon/logo_1024_1024.png"
+	"512x512;256x256;128x128;64x64;32x32;16x16"
+	"${APP_DIR}/usr/share/icons/hicolor"
+)
+
+set(EXECUTABLE_OPTIONS "")
+foreach(EXECUTABLE IN LISTS EXECUTABLES)
+	list(APPEND EXECUTABLE_OPTIONS "--executable=${EXECUTABLE}")
+endforeach()
+
+cmake_path(CONVERT "@QMAKE_EXECUTABLE@" TO_CMAKE_PATH_LIST QMAKE_EXECUTABLE)
+cmake_path(GET QMAKE_EXECUTABLE PARENT_PATH QT_BIN_DIR)
+
+find_program(LINUXDEPLOY_EXECUTABLE
+	NAMES linuxdeploy linuxdeploy-x86_64.AppImage
+	PATHS "/opt/linuxdeploy"
+	REQUIRED
+)
+
+set(WORKING_DIRECTORY "${CPACK_PACKAGE_DIRECTORY}")
+
+message(STATUS "Running Qt deploy tool for ${EXECUTABLES} in working directory '${WORKING_DIRECTORY}'")
+
+execute_process(
+	COMMAND
+		${CMAKE_COMMAND} -E env
+			QMAKE=@QMAKE_EXECUTABLE@
+			LD_LIBRARY_PATH=${QT_BIN_DIR}/../../../lib
+			LDAI_OUTPUT=${CPACK_PACKAGE_FILE_NAME}.AppImage
+			LINUXDEPLOY_OUTPUT_VERSION=${CPACK_PACKAGE_VERSION}
+		${LINUXDEPLOY_EXECUTABLE}
+			--plugin=qt
+			--appdir=${APP_DIR}
+			--desktop-file=@CMAKE_SOURCE_DIR@/deployment/linux/appimage/sourcetrail.desktop
+			--icon-file=${APP_DIR}/usr/share/icons/hicolor/512x512/apps/sourcetrail.png
+			--output=appimage
+			--verbosity=3
+			${EXECUTABLE_OPTIONS}
+	RESULT_VARIABLE result
+	WORKING_DIRECTORY
+		"${WORKING_DIRECTORY}"
+	OUTPUT_QUIET
+	COMMAND_ECHO STDOUT
+	COMMAND_ERROR_IS_FATAL ANY
+)

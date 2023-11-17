@@ -1,0 +1,148 @@
+# https://doc.qt.io/qt-5/macos-deployment.html
+
+include("@CMAKE_SOURCE_DIR@/cmake/installdirs/macos.cmake")
+
+include(CMakePrintHelpers)
+
+cmake_print_variables(CPACK_PACKAGE_FILE_NAME)
+cmake_print_variables(CPACK_PACKAGE_DIRECTORY)
+cmake_print_variables(CPACK_TOPLEVEL_DIRECTORY)
+cmake_print_variables(CPACK_TEMPORARY_DIRECTORY)
+
+set(BUNDLE_DIR "${CPACK_TEMPORARY_DIRECTORY}/@PROJECT_NAME@.app")
+
+file(MAKE_DIRECTORY "${BUNDLE_DIR}")
+file(MAKE_DIRECTORY "${BUNDLE_DIR}/Contents/lib")
+file(MAKE_DIRECTORY "${BUNDLE_DIR}/Contents/PlugIns")
+file(MAKE_DIRECTORY "${BUNDLE_DIR}/Contents/Frameworks")
+file(MAKE_DIRECTORY "${BUNDLE_DIR}/Contents/Resources")
+file(MAKE_DIRECTORY "${BUNDLE_DIR}/Contents/MacOS")
+
+file(GLOB arg_EXECUTABLES
+	"${CPACK_TEMPORARY_DIRECTORY}/Executables/${INSTALL_BIN_DIR}/*"
+)
+
+set(APP_PROJECT_FILE_NAME "$<TARGET_FILE_NAME:@APP_PROJECT_NAME@>")
+cmake_print_variables(APP_PROJECT_FILE_NAME)
+
+set(APP_INDEXER_FILE_NAME "$<TARGET_FILE_NAME:@APP_INDEXER_NAME@>")
+cmake_print_variables(APP_INDEXER_FILE_NAME)
+
+foreach(EXECUTABLE IN LISTS arg_EXECUTABLES)
+	if(EXECUTABLE MATCHES ".*/${APP_PROJECT_FILE_NAME}$")
+		file(COPY ${EXECUTABLE}
+			DESTINATION "${BUNDLE_DIR}/Contents/MacOS/"
+			FOLLOW_SYMLINK_CHAIN
+		)
+	elseif(EXECUTABLE MATCHES ".*/${APP_INDEXER_FILE_NAME}$")
+		file(COPY ${EXECUTABLE}
+			DESTINATION "${BUNDLE_DIR}/Contents/Resources/"
+			FOLLOW_SYMLINK_CHAIN
+		)
+	endif()
+endforeach()
+
+file(GLOB EXECUTABLES
+	"${BUNDLE_DIR}/Contents/MacOS/${APP_PROJECT_FILE_NAME}"
+	"${BUNDLE_DIR}/Contents/Resources/${APP_INDEXER_FILE_NAME}"
+)
+
+file(COPY "${CPACK_TEMPORARY_DIRECTORY}/Resources/${INSTALL_DATA_DIR}/data"
+	DESTINATION "${BUNDLE_DIR}/Contents/Resources/"
+	FOLLOW_SYMLINK_CHAIN
+)
+
+file(COPY "${CPACK_TEMPORARY_DIRECTORY}/Resources/${INSTALL_DATA_DIR}/user/projects"
+	DESTINATION "${BUNDLE_DIR}/Contents/Resources/data/fallback/"
+	FOLLOW_SYMLINK_CHAIN
+)
+
+file(COPY_FILE 
+	"@CMAKE_BINARY_DIR@/app/bundle_info.plist"
+	"${BUNDLE_DIR}/Contents/Info.plist"
+)
+
+function(create_icons image icon_sizes icon_path)
+	file(MAKE_DIRECTORY "${icon_path}.iconset")
+	foreach(icon_size ${icon_sizes})
+		string(REGEX MATCH "([0-9]+)x([0-9]+)(@([0-9]+)x)?" __icon_size ${icon_size})
+		if (CMAKE_MATCH_4)
+			math(EXPR icon_size_x "${CMAKE_MATCH_1} * ${CMAKE_MATCH_4}")
+			math(EXPR icon_size_y "${CMAKE_MATCH_2} * ${CMAKE_MATCH_4}")
+		else()
+			math(EXPR icon_size_x "${CMAKE_MATCH_1} * 1")
+			math(EXPR icon_size_y "${CMAKE_MATCH_2} * 1")
+		endif()
+		set(icon_resize "${icon_size_x}x${icon_size_y}")
+		execute_process(
+			COMMAND convert "${image}" -resize ${icon_resize} "${icon_path}.iconset/icon_${icon_size}.png"
+			COMMAND_ERROR_IS_FATAL ANY
+		)
+	endforeach()
+	execute_process(
+		COMMAND iconutil -c icns -o ${icon_path}.icns ${icon_path}.iconset
+		COMMAND_ECHO STDOUT
+		COMMAND_ERROR_IS_FATAL ANY
+	)
+endfunction()
+
+create_icons(
+	"${CPACK_TEMPORARY_DIRECTORY}/Resources/${INSTALL_DATA_DIR}/data/gui/icon/logo_1024_1024.png"
+	"512x512;512x512@2x;256x256;256x256@2x;128x128;128x128@x;64x64;64x64@2x;32x32;32x32@2x;16x16"
+	"${BUNDLE_DIR}/Contents/Resources/icon"
+)
+
+create_icons(
+	"${CPACK_TEMPORARY_DIRECTORY}/Resources/${INSTALL_DATA_DIR}/data/gui/icon/project_256_256.png"
+	"512x512;512x512@2x;256x256;256x256@2x;128x128;128x128@x;64x64;64x64@2x;32x32;32x32@2x;16x16"
+	"${BUNDLE_DIR}/Contents/Resources/project"
+)
+
+set(EXECUTABLE_OPTIONS "")
+foreach(EXECUTABLE IN LISTS EXECUTABLES)
+	list(APPEND EXECUTABLE_OPTIONS "-executable=${EXECUTABLE}")
+endforeach()
+
+cmake_path(CONVERT "@QMAKE_EXECUTABLE@" TO_CMAKE_PATH_LIST QMAKE_EXECUTABLE)
+cmake_path(GET QMAKE_EXECUTABLE PARENT_PATH QT_BIN_DIR)
+
+find_program(MACDEPLOY_EXECUTABLE
+	NAMES macdeployqt
+	PATHS "${QT_BIN_DIR}"
+	REQUIRED
+)
+
+set(WORKING_DIRECTORY "${CPACK_TEMPORARY_DIRECTORY}")
+
+message(STATUS "Running Qt deploy tool for ${EXECUTABLES} in working directory '${WORKING_DIRECTORY}'")
+
+execute_process(
+	COMMAND
+		${MACDEPLOY_EXECUTABLE}
+			@PROJECT_NAME@.app
+			-libpath=${QT_BIN_DIR}/../../../lib
+			-no-strip
+			-always-overwrite
+			-dmg
+			-verbose=1
+			${EXECUTABLE_OPTIONS}
+	RESULT_VARIABLE result
+	WORKING_DIRECTORY
+		"${WORKING_DIRECTORY}"
+	OUTPUT_QUIET
+	COMMAND_ECHO STDOUT
+	COMMAND_ERROR_IS_FATAL ANY
+)
+
+foreach(EXECUTABLE IN LISTS EXECUTABLES)
+	execute_process(
+		COMMAND otool -L ${EXECUTABLE}
+		COMMAND_ECHO STDOUT
+		COMMAND_ERROR_IS_FATAL ANY
+	)
+endforeach()
+
+file(COPY_FILE 
+	"${CPACK_TEMPORARY_DIRECTORY}/@PROJECT_NAME@.dmg"
+	"${CPACK_PACKAGE_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.dmg"
+)
