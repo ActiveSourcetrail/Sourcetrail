@@ -141,8 +141,8 @@ void CxxParser::buildIndex(std::shared_ptr<IndexerCommandCxx> indexerCommand)
 	compileCommand.CommandLine = getCommandlineArgumentsEssential(args);
 	compileCommand.CommandLine = prependSyntaxOnlyToolArgs(compileCommand.CommandLine);
 
-	CxxCompilationDatabaseSingle compilationDatabase(compileCommand);
-	runTool(&compilationDatabase, indexerCommand->getSourceFilePath());
+	std::unique_ptr<clang::tooling::CompilationDatabase> compilationDatabase = clang::tooling::expandResponseFiles(std::make_unique<CxxCompilationDatabaseSingle>(compileCommand), llvm::vfs::getRealFileSystem());
+	runTool(compilationDatabase.get(), indexerCommand->getSourceFilePath());
 }
 
 void CxxParser::buildIndex(
@@ -180,6 +180,20 @@ void CxxParser::runTool(
 		sourceFilePath, canonicalFilePathCache, true);
 
 	tool.setDiagnosticConsumer(diagnostics.get());
+
+	// Diagnose misuse of /Fo.
+	tool.appendArgumentsAdjuster(
+		[](const clang::tooling::CommandLineArguments& Args, clang::StringRef /*unused*/)
+		{
+			clang::tooling::CommandLineArguments AdjustedArgs;
+			for (size_t i = 0, e = Args.size(); i < e; ++i)
+			{
+				clang::StringRef Arg = Args[i];
+				if (!Arg.startswith("/Fo") /*&& IsCLMode()*/ )
+					AdjustedArgs.push_back(Args[i]);
+			}
+			return AdjustedArgs;
+		});
 
 	ClangInvocationInfo info;
 	if (LogManager::getInstance()->getLoggingEnabled())
