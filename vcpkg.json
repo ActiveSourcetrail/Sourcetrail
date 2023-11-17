@@ -15,7 +15,6 @@
             "enable-rtti",
             "enable-threads",
             "disable-assertions",
-            "disable-abi-breaking-checks",
             "disable-clang-static-analyzer"
           ]
         }
@@ -50,7 +49,7 @@
     { "name": "boost-uuid", "default-features": false }
   ],
   "overrides": [
-    { "name": "llvm", "version": "11.0.0#3" },
+    { "name": "llvm", "version": "16.0.6" },
     { "name": "libjpeg-turbo", "version": "3.0.0#2" },
     { "name": "qt5-base", "version": "5.15.11#1" },
     { "name": "qt5-svg", "version": "5.15.11" },
@@ -230,7 +229,7 @@
       }
     ],
     "overlay-ports": [
-      "./vcpkg-overlay/ports/llvm/11.0.0#3"
+      "./vcpkg-overlay/ports/llvm/16.0.6"
     ],
     "overlay-triplets": [
       "./vcpkg-overlay/triplets"

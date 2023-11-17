@@ -25,7 +25,7 @@ set(LICENSE_APP "LicenseInfo(\"Sourcetrail\", \"${VERSION_STRING}\", \"https://g
 
 AddLicense("Boost" "1.83" "http://www.boost.org" "${LICENSEFOLDER}/license_boost.txt")
 AddLicense("catch" "2.5.0" "https://github.com/catchorg/Catch2" "${LICENSEFOLDER}/license_catch.txt")
-AddLicense("Clang" "11.0.0" "http://clang.llvm.org/" "${LICENSEFOLDER}/license_clang.txt")
+AddLicense("Clang" "16.0.6" "http://clang.llvm.org/" "${LICENSEFOLDER}/license_clang.txt")
 AddLicense("CppSQLite" "3.2" "http://www.codeproject.com/Articles/6343/CppSQLite-C-Wrapper-for-SQLite" "${LICENSEFOLDER}/license_cpp_sqlite.txt")
 AddLicense("EclipseJDT" "" "https://github.com/eclipse/eclipse.jdt.core" "${LICENSEFOLDER}/license_eclipse.txt")
 AddLicense("Gradle" "4.2" "https://github.com/gradle/gradle" "${LICENSEFOLDER}/license_gradle.txt")
