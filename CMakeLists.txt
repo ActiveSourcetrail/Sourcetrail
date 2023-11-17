@@ -48,16 +48,22 @@ set(LIB_PYTHON_PROJECT_NAME "${PROJECT_NAME}_lib_python")
 set(LIB_PROJECT_NAME "${PROJECT_NAME}_lib")
 set(TEST_PROJECT_NAME "${PROJECT_NAME}_test")
 
-if (WIN32)
+# Project ----------------------------------------------------------------------
+
+project(${PROJECT_NAME})
+
+# CMAKE_SYSTEM_NAME available after project
+
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	set(PLATFORM_INCLUDE "includesWindows.h")
-elseif (APPLE)
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 	set(PLATFORM_INCLUDE "includesMac.h")
-else ()
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	set(PLATFORM_INCLUDE "includesLinux.h")
 endif ()
 
 set (BASH "")
-if (WIN32)
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	execute_process(COMMAND CMD /c where bash OUTPUT_VARIABLE BASH)
 	string(REGEX REPLACE "\n$" "" BASH "${BASH}")
 endif ()
@@ -65,15 +71,12 @@ endif ()
 message ("bash: '${BASH}'")
 
 
-# Project ----------------------------------------------------------------------
-
-project(${PROJECT_NAME})
 
 # set Standard build type to Release
 set(CMAKE_BUILD_TYPE_INIT "Release")
 
 #RPATH
-if(UNIX AND NOT APPLE)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	set(CMAKE_SKIP_BUILD_RPATH FALSE)
 	set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 	set(CMAKE_INSTALL_RPATH "$ORIGIN/lib/:$$ORIGIN/lib/")
@@ -124,7 +127,7 @@ if (TREAT_WARNINGS_AS_ERRORS)
 endif()
 
 # For debugging the release build on linux
-#if (UNIX AND "${CMAKE_BUILD_TYPE}" STREQUAL "Release")
+#if (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND "$<CONFIG>" STREQUAL "Release")
 	#add_definitions(-fno-omit-frame-pointer)
 #endif ()
 
@@ -192,7 +195,7 @@ set (QT_MIN_VERSION "5.12.0")
 set (QT_MIN_VERSION_HEX 0x051200)
 find_package(Qt5 ${QT_MIN_VERSION} COMPONENTS Widgets PrintSupport Network Svg REQUIRED)
 
-if (WIN32)
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	find_package(Qt5 ${QT_MIN_VERSION} COMPONENTS WinExtras REQUIRED)
 endif()
 
@@ -220,7 +223,7 @@ endif()
 
 # Setup ---------------------------------------------------------------------------
 
-if (WIN32)
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	get_filename_component(QT_BINARY_DIR "${QT_MOC_EXECUTABLE}" PATH)
 	set(QT_PLUGINS_DIR "${QT_BINARY_DIR}/../plugins")
 
@@ -314,12 +317,12 @@ target_include_directories(${LIB_UTILITY_PROJECT_NAME} SYSTEM
 
 target_link_libraries(${LIB_UTILITY_PROJECT_NAME} ${Boost_LIBRARIES} Qt5::Widgets Qt5::Network)
 
-if (UNIX AND NOT APPLE)
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	find_package(Threads REQUIRED)
 	target_link_libraries(${LIB_UTILITY_PROJECT_NAME} ${CMAKE_DL_LIBS} rt ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
-if (WIN32)
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	target_link_libraries(${LIB_UTILITY_PROJECT_NAME} Qt5::WinExtras)
 endif()
 
@@ -434,7 +437,7 @@ if (BUILD_CXX_LANGUAGE_PACKAGE)
 
 	target_link_libraries(${LIB_CXX_PROJECT_NAME} ${LIB_UTILITY_PROJECT_NAME} ${CLANG_LIBRARIES} ${REQ_LLVM_LIBS})
 
-	if (WIN32)
+	if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 		target_compile_definitions(${LIB_CXX_PROJECT_NAME} PRIVATE _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS) # Due to Clang
 		target_link_libraries(${LIB_CXX_PROJECT_NAME} version)
 	endif()
@@ -542,7 +545,7 @@ add_library(${LIB_GUI_PROJECT_NAME} ${LIB_GUI_FILES} ${CMAKE_BINARY_DIR}/src/lib
 
 target_link_libraries(${LIB_GUI_PROJECT_NAME} ${LIB_UTILITY_PROJECT_NAME} ${LIB_PROJECT_NAME} Qt5::Widgets Qt5::Network Qt5::Svg)
 
-if (WIN32)
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	target_link_libraries(${LIB_GUI_PROJECT_NAME} Qt5::WinExtras)
 endif()
 
@@ -604,7 +607,7 @@ set(CMAKE_AUTOMOC OFF)
 
 # Indexer App ------------------------------------------------------------------
 
-if (UNIX)
+if (NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/app/")
 else ()
 	foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
@@ -621,7 +624,7 @@ add_executable(${APP_INDEXER_NAME} ${INDEXER_FILES})
 
 set_target_properties(${APP_INDEXER_NAME} PROPERTIES OUTPUT_NAME sourcetrail_indexer)
 
-if (WIN32)
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	# hide the console when running a release build.
 	set_target_properties(${APP_INDEXER_NAME} PROPERTIES LINK_FLAGS_DEBUG "/SUBSYSTEM:CONSOLE /DEBUG:FASTLINK")
 	set_target_properties(${APP_INDEXER_NAME} PROPERTIES COMPILE_DEFINITIONS_DEBUG "_CONSOLE")
@@ -645,7 +648,7 @@ target_link_libraries(
 	${LIB_PROJECT_NAME}
 )
 
-if (APPLE)
+if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 	find_library(CORE_FOUNDATION CoreFoundation)
 	target_link_libraries(${APP_INDEXER_NAME} ${CORE_FOUNDATION})
 endif ()
@@ -667,7 +670,7 @@ set_property(
 
 # App --------------------------------------------------------------------------
 
-if (UNIX)
+if (NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/app/")
 else ()
 	foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
@@ -679,7 +682,7 @@ endif ()
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-if (WIN32)
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	file(WRITE ${CMAKE_BINARY_DIR}/Sourcetrail.rc
 		"// Icon with lowest ID value placed first to ensure application icon\n"
 		"// remains consistent on all systems.\n"
@@ -746,7 +749,7 @@ qt5_use_modules(${APP_PROJECT_NAME} Widgets)
 qt5_use_modules(${APP_PROJECT_NAME} Network)
 
 # add platform specific libraries
-if (APPLE)
+if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 	find_library(CORE_FOUNDATION CoreFoundation)
 	target_link_libraries(${APP_PROJECT_NAME} ${CORE_FOUNDATION})
 endif ()
@@ -756,7 +759,7 @@ add_dependencies(${APP_PROJECT_NAME} ${APP_INDEXER_NAME})
 
 # macOS Bundle ----------------------------------------------------------------
 
-if (APPLE)
+if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 
 	set(MACOS_BUNDLE_NAME ${PROJECT_NAME})
 	set(MACOS_BUNDLE_VERSION ${VERSION_STRING})
@@ -805,7 +808,7 @@ endif ()
 
 # Test ----------------------------------------------------------------------
 
-if (UNIX)
+if (NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/test/")
 else ()
 	foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
@@ -847,7 +850,7 @@ set_property(
 		$<$<BOOL:${BUILD_PYTHON_LANGUAGE_PACKAGE}>:${LIB_PYTHON_INCLUDE_PATHS}>
 )
 
-if (WIN32)
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	set_target_properties(${TEST_PROJECT_NAME} PROPERTIES COMPILE_FLAGS "/bigobj")
 	set_property(
 		TARGET ${TEST_PROJECT_NAME}
@@ -862,7 +865,7 @@ message(STATUS "create symlink: "
 	"${CMAKE_BINARY_DIR}/app/data"
 )
 
-if (UNIX)
+if (NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	execute_process(
 		COMMAND "${CMAKE_COMMAND}" "-E" "make_directory" "${CMAKE_BINARY_DIR}/app"
 		COMMAND "${CMAKE_COMMAND}" "-E" "make_directory" "${CMAKE_BINARY_DIR}/test"
@@ -872,7 +875,7 @@ if (UNIX)
 		COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_SOURCE_DIR}/bin/app/user" "${CMAKE_BINARY_DIR}/app/user"
 		COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_SOURCE_DIR}/bin/test/data" "${CMAKE_BINARY_DIR}/test/data"
 	)
-elseif(WIN32)
+else ()
 	foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
 		if (EXISTS "${BACKSLASHED_CMAKE_BINARY_DIR}\\${OUTPUTCONFIG}")
 			execute_process(
