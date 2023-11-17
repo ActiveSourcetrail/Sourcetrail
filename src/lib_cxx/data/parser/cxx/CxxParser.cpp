@@ -181,6 +181,20 @@ void CxxParser::runTool(
 
 	tool.setDiagnosticConsumer(diagnostics.get());
 
+	// Diagnose misuse of /Fo.
+	tool.appendArgumentsAdjuster(
+		[](const clang::tooling::CommandLineArguments& Args, clang::StringRef /*unused*/)
+		{
+			clang::tooling::CommandLineArguments AdjustedArgs;
+			for (size_t i = 0, e = Args.size(); i < e; ++i)
+			{
+				clang::StringRef Arg = Args[i];
+				if (!Arg.startswith("/Fo") /*&& IsCLMode()*/ )
+					AdjustedArgs.push_back(Args[i]);
+			}
+			return AdjustedArgs;
+		});
+
 	ClangInvocationInfo info;
 	if (LogManager::getInstance()->getLoggingEnabled())
 	{
