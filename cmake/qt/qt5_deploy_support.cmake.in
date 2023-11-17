@@ -1,0 +1,232 @@
+include(CMakePrintHelpers)
+
+function(qt5_deploy_runtime_dependencies)
+	set(no_value_options
+		NO_TRANSLATIONS
+		NO_COMPILER_RUNTIME
+	)
+	set(single_value_options
+		BIN_DIR
+		LIB_DIR
+		PLUGINS_DIR
+		QML_DIR
+	)
+	set(multi_value_options
+		EXECUTABLES
+	)
+
+	cmake_parse_arguments(PARSE_ARGV 0 arg
+		"${no_value_options}" "${single_value_options}" "${multi_value_options}"
+	)
+
+	cmake_print_variables(arg_EXECUTABLES)
+
+	set(APP_PROJECT_FILE_NAME "$<TARGET_FILE_NAME:@APP_PROJECT_NAME@>")
+	cmake_print_variables(APP_PROJECT_FILE_NAME)
+
+	set(APP_INDEXER_FILE_NAME "$<TARGET_FILE_NAME:@APP_INDEXER_NAME@>")
+	cmake_print_variables(APP_INDEXER_FILE_NAME)
+
+	file(MAKE_DIRECTORY "@CMAKE_INSTALL_PREFIX@")
+
+	cmake_path(CONVERT "@QMAKE_EXECUTABLE@" TO_CMAKE_PATH_LIST QMAKE_EXECUTABLE)
+	cmake_path(GET QMAKE_EXECUTABLE PARENT_PATH QT_BIN_DIR)
+
+	if(@CMAKE_SYSTEM_NAME@ STREQUAL Windows)
+		# https://doc.qt.io/qt-5/windows-deployment.html
+
+		file(GLOB EXECUTABLES
+			${arg_EXECUTABLES}
+		)
+
+		set(EXECUTABLE_OPTIONS "")
+		foreach(EXECUTABLE IN LISTS EXECUTABLES)
+			list(APPEND EXECUTABLE_OPTIONS "${EXECUTABLE}")
+		endforeach()
+
+		find_program(WINDEPLOY_EXECUTABLE
+			NAMES windeployqt
+			PATHS "${QT_BIN_DIR}"
+			REQUIRED
+		)
+
+		set(WORKING_DIRECTORY "@CMAKE_INSTALL_PREFIX@")
+
+		message(STATUS "Running Qt deploy tool for ${EXECUTABLES} in working directory '${WORKING_DIRECTORY}'")
+
+		execute_process(
+			COMMAND
+				${CMAKE_COMMAND} -E env
+					PATH=${QT_BIN_DIR}
+				${WINDEPLOY_EXECUTABLE}
+					--release
+					--dir ${arg_BIN_DIR}
+					--libdir ${arg_LIB_DIR}
+					--plugindir ${arg_PLUGINS_DIR}
+					--no-quick-import
+					--no-translations
+					--no-system-d3d-compiler
+					--no-compiler-runtime
+					--no-angle
+					--no-opengl-sw
+					--list mapping
+					--verbose 1
+					${EXECUTABLE_OPTIONS}
+			RESULT_VARIABLE result
+			WORKING_DIRECTORY 
+				"${WORKING_DIRECTORY}"
+			OUTPUT_QUIET
+			COMMAND_ECHO STDOUT
+			COMMAND_ERROR_IS_FATAL ANY
+		)
+
+	elseif(@CMAKE_SYSTEM_NAME@ STREQUAL Linux)
+		# https://github.com/linuxdeploy/linuxdeploy-plugin-qt
+
+		set(APP_DIR "@CMAKE_INSTALL_PREFIX@/AppDir")
+
+		file(MAKE_DIRECTORY "${APP_DIR}/AppImage")
+
+		configure_file(
+			"@CMAKE_SOURCE_DIR@/cmake/qt/application.desktop.in"
+			"${APP_DIR}/AppImage/${APP_PROJECT_FILE_NAME}.desktop"
+			@ONLY
+			NEWLINE_STYLE LF
+		)
+
+		file(CONFIGURE
+			OUTPUT "${APP_DIR}/AppImage/${APP_PROJECT_FILE_NAME}.svg"
+			CONTENT [[<svg></svg>]]
+		)
+
+		file(GLOB EXECUTABLES
+			${arg_EXECUTABLES}
+		)
+
+		set(EXECUTABLE_OPTIONS "")
+		foreach(EXECUTABLE IN LISTS EXECUTABLES)
+			list(APPEND EXECUTABLE_OPTIONS "--executable=${EXECUTABLE}")
+		endforeach()
+
+		find_program(LINUXDEPLOY_EXECUTABLE
+			NAMES linuxdeploy linuxdeploy-x86_64.AppImage
+			PATHS "/opt/linuxdeploy"
+			REQUIRED
+		)
+
+		set(WORKING_DIRECTORY "@CMAKE_INSTALL_PREFIX@")
+
+		message(STATUS "Running Qt deploy tool for ${EXECUTABLES} in working directory '${WORKING_DIRECTORY}'")
+
+		execute_process(
+			COMMAND
+				${CMAKE_COMMAND} -E env
+					QMAKE=@QMAKE_EXECUTABLE@
+					LD_LIBRARY_PATH=${QT_BIN_DIR}/../../../lib
+				${LINUXDEPLOY_EXECUTABLE}
+					--plugin=qt
+					--appdir=${APP_DIR}
+					--desktop-file=${APP_DIR}/AppImage/${APP_PROJECT_FILE_NAME}.desktop
+					--icon-file=${APP_DIR}/AppImage/${APP_PROJECT_FILE_NAME}.svg
+					--verbosity=3
+					${EXECUTABLE_OPTIONS}
+			RESULT_VARIABLE result
+			WORKING_DIRECTORY
+				"${WORKING_DIRECTORY}"
+			OUTPUT_QUIET
+			COMMAND_ECHO STDOUT
+			COMMAND_ERROR_IS_FATAL ANY
+		)
+
+		file(COPY "${APP_DIR}/usr/bin"
+			DESTINATION "@CMAKE_INSTALL_PREFIX@/"
+			FOLLOW_SYMLINK_CHAIN
+		)
+
+		file(COPY "${APP_DIR}/usr/lib"
+			DESTINATION "@CMAKE_INSTALL_PREFIX@/"
+			FOLLOW_SYMLINK_CHAIN
+		)
+
+		file(COPY "${APP_DIR}/usr/plugins"
+			DESTINATION "@CMAKE_INSTALL_PREFIX@/"
+			FOLLOW_SYMLINK_CHAIN
+		)
+
+		file(REMOVE_RECURSE "${APP_DIR}"
+		)
+
+	elseif(@CMAKE_SYSTEM_NAME@ STREQUAL Darwin)
+		# https://doc.qt.io/qt-5/macos-deployment.html
+
+		set(BUNDLE_DIR "@CMAKE_INSTALL_PREFIX@/@PROJECT_NAME@.app")
+
+		file(MAKE_DIRECTORY "${BUNDLE_DIR}")
+		file(MAKE_DIRECTORY "${BUNDLE_DIR}/Contents/lib")
+		file(MAKE_DIRECTORY "${BUNDLE_DIR}/Contents/PlugIns")
+		file(MAKE_DIRECTORY "${BUNDLE_DIR}/Contents/Frameworks")
+		file(MAKE_DIRECTORY "${BUNDLE_DIR}/Contents/Resources")
+		file(MAKE_DIRECTORY "${BUNDLE_DIR}/Contents/MacOS")
+
+		foreach(EXECUTABLE IN LISTS arg_EXECUTABLES)
+			if(EXECUTABLE MATCHES ".*/${APP_PROJECT_FILE_NAME}$")
+				file(COPY ${EXECUTABLE}
+					DESTINATION "${BUNDLE_DIR}/Contents/MacOS/"
+					FOLLOW_SYMLINK_CHAIN
+				)
+			elseif(EXECUTABLE MATCHES ".*/${APP_INDEXER_FILE_NAME}$")
+				file(COPY ${EXECUTABLE}
+					DESTINATION "${BUNDLE_DIR}/Contents/Resources/"
+					FOLLOW_SYMLINK_CHAIN
+				)
+			endif()
+		endforeach()
+
+		file(GLOB EXECUTABLES
+			"${BUNDLE_DIR}/Contents/MacOS/${APP_PROJECT_FILE_NAME}"
+			"${BUNDLE_DIR}/Contents/Resources/${APP_INDEXER_FILE_NAME}"
+		)
+
+		set(EXECUTABLE_OPTIONS "")
+		foreach(EXECUTABLE IN LISTS EXECUTABLES)
+			list(APPEND EXECUTABLE_OPTIONS "-executable=${EXECUTABLE}")
+		endforeach()
+
+		find_program(MACDEPLOY_EXECUTABLE
+			NAMES macdeployqt
+			PATHS "${QT_BIN_DIR}"
+			REQUIRED
+		)
+
+		set(WORKING_DIRECTORY "@CMAKE_INSTALL_PREFIX@")
+
+		message(STATUS "Running Qt deploy tool for ${EXECUTABLES} in working directory '${WORKING_DIRECTORY}'")
+
+		execute_process(
+			COMMAND
+				${MACDEPLOY_EXECUTABLE}
+					@PROJECT_NAME@.app
+					-libpath=${QT_BIN_DIR}/../../../lib
+					-no-strip
+					-always-overwrite
+					-verbose=1
+					${EXECUTABLE_OPTIONS}
+			RESULT_VARIABLE result
+			WORKING_DIRECTORY 
+				"${WORKING_DIRECTORY}"
+			OUTPUT_QUIET
+			COMMAND_ECHO STDOUT
+			COMMAND_ERROR_IS_FATAL ANY
+		)
+
+		foreach(EXECUTABLE IN LISTS EXECUTABLES)
+			execute_process(
+				COMMAND otool -L ${EXECUTABLE}
+				COMMAND_ECHO STDOUT
+				COMMAND_ERROR_IS_FATAL ANY
+			)
+		endforeach()
+
+	endif()
+
+endfunction()
