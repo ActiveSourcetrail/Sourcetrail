@@ -25,10 +25,11 @@ const T* getFirstDecl(const T* decl);
 bool isImplicit(const clang::Decl* d);
 AccessKind convertAccessSpecifier(clang::AccessSpecifier access);
 SymbolKind convertTagKind(const clang::TagTypeKind tagKind);
-bool isLocalVariable(const clang::VarDecl* d);
-bool isParameter(const clang::VarDecl* d);
+bool isLocalVariable(const clang::ValueDecl* d);
+bool isParameter(const clang::ValueDecl* d);
 SymbolKind getSymbolKind(const clang::VarDecl* d);
 std::wstring getFileNameOfFileEntry(const clang::FileEntry* entry);
+bool isValidFileEntry(const clang::FileEntry* fileEntry);
 
 ParseLocation getParseLocation(
 	const clang::SourceLocation& sourceLocation,

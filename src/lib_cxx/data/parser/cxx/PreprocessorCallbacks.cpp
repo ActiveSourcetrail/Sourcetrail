@@ -3,6 +3,7 @@
 #include <clang/Basic/IdentifierTable.h>
 #include <clang/Driver/Util.h>
 #include <clang/Lex/MacroArgs.h>
+#include <clang/Basic/Version.h>
 
 #include "CanonicalFilePathCache.h"
 #include "ParseLocation.h"
@@ -52,6 +53,19 @@ void PreprocessorCallbacks::FileChanged(
 	}
 }
 
+#if CLANG_VERSION_MAJOR >= 16
+void PreprocessorCallbacks::InclusionDirective(
+	clang::SourceLocation hashLocation,
+	const clang::Token& includeToken,
+	llvm::StringRef fileName,
+	bool isAngled,
+	clang::CharSourceRange fileNameRange,
+	clang::OptionalFileEntryRef fileEntry,
+	llvm::StringRef searchPath,
+	llvm::StringRef relativePath,
+	const clang::Module* imported,
+	clang::SrcMgr::CharacteristicKind fileType)
+#else
 void PreprocessorCallbacks::InclusionDirective(
 	clang::SourceLocation hashLocation,
 	const clang::Token& includeToken,
@@ -63,10 +77,15 @@ void PreprocessorCallbacks::InclusionDirective(
 	llvm::StringRef relativePath,
 	const clang::Module* imported,
 	clang::SrcMgr::CharacteristicKind fileType)
+#endif
 {
 	if (m_currentFileSymbolId && fileEntry)
 	{
+#if CLANG_VERSION_MAJOR >= 16
+		const FilePath includedFilePath = m_canonicalFilePathCache->getCanonicalFilePath(&fileEntry->getFileEntry());
+#else
 		const FilePath includedFilePath = m_canonicalFilePathCache->getCanonicalFilePath(fileEntry);
+#endif
 		const NameHierarchy includedFileNameHierarchy(includedFilePath.wstr(), NAME_DELIMITER_FILE);
 
 		Id includedFileSymbolId = m_client->recordSymbol(includedFileNameHierarchy);

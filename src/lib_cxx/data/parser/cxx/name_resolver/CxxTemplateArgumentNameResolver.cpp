@@ -4,6 +4,7 @@
 
 #include <clang/AST/DeclTemplate.h>
 #include <clang/AST/PrettyPrinter.h>
+#include <clang/Basic/Version.h>
 
 #include "CxxTypeNameResolver.h"
 #include "utilityString.h"
@@ -49,7 +50,11 @@ std::wstring CxxTemplateArgumentNameResolver::getTemplateArgumentName(
 
 		std::string buf;
 		llvm::raw_string_ostream os(buf);
+#if CLANG_VERSION_MAJOR >= 16
+		argument.print(pp, os, true);
+#else
 		argument.print(pp, os);
+#endif
 		return utility::decodeFromUtf8(os.str());
 	}
 	case clang::TemplateArgument::Pack:

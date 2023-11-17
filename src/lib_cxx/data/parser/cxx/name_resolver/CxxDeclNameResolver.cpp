@@ -262,7 +262,7 @@ std::unique_ptr<CxxDeclName> CxxDeclNameResolver::getDeclName(const clang::Named
 						clang::dyn_cast_or_null<clang::SubstTemplateTypeParmType>(
 							functionDecl->parameters()[i]->getType().getTypePtr()))
 				{
-					if (const clang::TemplateTypeParmType* templateParamType =
+					if (const auto templateParamType =
 							substType->getReplacedParameter())
 					{
 						if (templateParamType->isParameterPack())
