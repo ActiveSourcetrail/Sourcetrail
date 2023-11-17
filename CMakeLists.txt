@@ -91,11 +91,11 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	ADD_COMPILE_OPTIONS(/MP)
 	ADD_COMPILE_OPTIONS(/utf-8)
-endif()
-
-# FIXME: necessary to fix build in Docker
-if (DOCKER_BUILD)
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+	# FIXME: necessary to fix build in Docker
+	if (DOCKER_BUILD)
+		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
+	endif()
 endif()
 
 if (TREAT_WARNINGS_AS_ERRORS)
