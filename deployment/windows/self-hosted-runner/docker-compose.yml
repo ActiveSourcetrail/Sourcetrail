@@ -1,0 +1,17 @@
+services:
+  windows:
+    platform: windows/amd64
+    image: sourcetrail/self-hosted-runner:windows
+    build:
+        context: ../dockerfiles/self-hosted
+        platforms:
+          - windows/amd64
+        target: runner
+    environment:
+      - VCPKG_BINARY_SOURCES=clear;x-gha,readwrite;
+      - URL=https://github.com/ActiveSourcetrail/Sourcetrail
+      - TOKEN=YOURTOKEN
+
+networks:
+  default:
+    name: self-hosted-runner

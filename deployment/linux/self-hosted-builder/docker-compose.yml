@@ -1,0 +1,49 @@
+services:
+  linux:
+    platform: linux/amd64
+    image: sourcetrail/self-hosted-builder:linux
+    build:
+        context: ../../../
+        dockerfile: deployment/linux/dockerfiles/self-hosted/Dockerfile
+        platforms:
+          - linux/amd64
+        target: builder
+    devices:
+      - /dev/fuse # Needed for mounting fuse filesystem
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    depends_on:
+      - vcpkg-cache-http
+    shm_size: 256mb # For sourcetrail indexing
+    environment:
+      - VCPKG_BINARY_SOURCES=clear;files,/work/source/build/.cache/vcpkg-files,readwrite;
+     #- VCPKG_BINARY_SOURCES=clear;http,http://vcpkg-cache-http:15151/{name}/{version}/{sha},readwrite;
+    volumes:
+      - packages:/work/source/distr/packages
+      - vcpkg-files:/work/source/build/.cache/vcpkg-files
+
+  vcpkg-cache-http:
+    platform: linux/amd64
+    image: sourcetrail/vcpkg-cache-http:linux
+    build:
+        context: ../dockerfiles/vcpkg-cache-http
+        platforms:
+          - linux/amd64
+    ports:
+      - 15151:15151
+    volumes:
+      - vcpkg-http:/app/vcpkg-cache
+
+volumes:
+  packages:
+    name: "packages"
+  vcpkg-files:
+    name: "vcpkg-files"
+  vcpkg-http:
+    name: "vcpkg-http"
+
+networks:
+  default:
+    name: self-hosted-builder
