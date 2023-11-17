@@ -1,0 +1,9 @@
+set(INSTALL_BIN_DIR ".")
+
+set(INSTALL_DATA_DIR ".")
+
+set(INSTALL_LIB_DIR ".")
+
+set(INSTALL_PLUGINS_DIR ".")
+
+set(INSTALL_QML_DIR ".")

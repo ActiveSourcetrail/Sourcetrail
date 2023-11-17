@@ -1,0 +1,6 @@
+[Desktop Entry]
+Categories=Utility;
+Icon=@APP_PROJECT_FILE_NAME@
+Name=@APP_PROJECT_FILE_NAME@
+Type=Application
+Exec=@APP_PROJECT_FILE_NAME@

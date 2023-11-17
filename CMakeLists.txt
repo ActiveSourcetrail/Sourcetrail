@@ -1,12 +1,24 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.21)
 
-if (WIN32 AND (CMAKE_GENERATOR STREQUAL "Ninja"))
-	set(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE})
-endif()
+include(CMakePrintHelpers)
+
 set(BUILD_CXX_LANGUAGE_PACKAGE OFF CACHE BOOL "Add C and C++ support to the Sourcetrail indexer.")
+if(BUILD_CXX_LANGUAGE_PACKAGE)
+	list(APPEND VCPKG_MANIFEST_FEATURES "cpp")
+endif()
+
 set(BUILD_JAVA_LANGUAGE_PACKAGE OFF CACHE BOOL "Add Java support to the Sourcetrail indexer.")
+if(BUILD_JAVA_LANGUAGE_PACKAGE)
+	list(APPEND VCPKG_MANIFEST_FEATURES "java")
+endif()
+
 set(BUILD_PYTHON_LANGUAGE_PACKAGE OFF CACHE BOOL "Add Python support to the Sourcetrail indexer.")
+if(BUILD_PYTHON_LANGUAGE_PACKAGE)
+	list(APPEND VCPKG_MANIFEST_FEATURES "python")
+endif()
+
 set(DOCKER_BUILD OFF CACHE BOOL "Build runs in Docker")
+
 set(TREAT_WARNINGS_AS_ERRORS ON CACHE BOOL "Treat compiler warnings as errors")
 
 #set (CMAKE_VERBOSE_MAKEFILE ON)
@@ -100,8 +112,8 @@ endif()
 
 if (TREAT_WARNINGS_AS_ERRORS)
 	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-		# Visual Studio 2017 version 15.9 <= Version <= Visual Studio 2019 Version 16.4
-		if ((MSVC_VERSION GREATER_EQUAL 1916) AND (MSVC_VERSION LESS_EQUAL 1924))
+		# Visual Studio 2017 version 15.9 <= Version <= Visual Studio 2022 Version 17.X
+		if ((MSVC_VERSION GREATER_EQUAL 1916) AND (MSVC_TOOLSET_VERSION LESS_EQUAL 143))
 			# Warning 4003: not enough actual parameters for macro 'identifier'
 			# Warning 4250: 'class1' inherits 'class2::member' via dominance
 			set(WARNINGS_LIST "/wd4003 /wd4250")
@@ -133,6 +145,7 @@ endif()
 
 if (BUILD_CXX_LANGUAGE_PACKAGE)
 
+	find_package(LLVM 11 REQUIRED)
 	find_package(Clang REQUIRED)
 
 	if (LLVM_FOUND)
@@ -169,14 +182,20 @@ set(Boost_USE_MULTITHREAD ON)
 set(Boost_USE_STATIC_LIBS ON CACHE BOOL "Set to ON to force the use of the static libraries.")
 set(Boost_USE_STATIC_RUNTIME OFF)
 
-find_package(Boost 1.67 COMPONENTS system program_options filesystem date_time REQUIRED)
-
+find_package(Boost 1.67 REQUIRED COMPONENTS
+	system
+	program_options
+	filesystem
+	date_time
+)
 
 # Qt ---------------------------------------------------------------------------
 
 set (QT_MIN_VERSION "5.12.0")
 set (QT_MIN_VERSION_HEX 0x051200)
-find_package(Qt5 ${QT_MIN_VERSION} COMPONENTS Widgets PrintSupport Network Svg REQUIRED)
+find_package(Qt5 ${QT_MIN_VERSION} REQUIRED COMPONENTS
+	 Core Gui Widgets Network Svg
+)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	find_package(Qt5 ${QT_MIN_VERSION} COMPONENTS WinExtras REQUIRED)
@@ -207,66 +226,7 @@ endif()
 # Setup ---------------------------------------------------------------------------
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-	get_filename_component(QT_BINARY_DIR "${QT_MOC_EXECUTABLE}" PATH)
-	set(QT_PLUGINS_DIR "${QT_BINARY_DIR}/../plugins")
-
-	function(COPY_QT_BINARIES IS_DEBUG IS_APP)
-		set(SUFFIX "")
-		if (IS_DEBUG)
-			set(SUFFIX "d")
-		endif()
-
-		set(CONFIGURATION "Release")
-		if (IS_DEBUG)
-			set(CONFIGURATION "Debug")
-		endif()
-
-		if(CMAKE_CL_64)
-			set(BITS "64")
-		else()
-			set(BITS "32")
-		endif()
-
-		set(TARGET "test")
-		if (IS_APP)
-			set(TARGET "app")
-
-			file(GLOB MY_PUBLIC_HEADERS
-				"${CMAKE_SOURCE_DIR}/setup/dynamic_libraries/win${BITS}/app/${CONFIGURATION}/*"
-			)
-			file(COPY ${MY_PUBLIC_HEADERS} DESTINATION "${CMAKE_BINARY_DIR}/${CONFIGURATION}/${TARGET}/")
-
-		endif()
-
-		configure_file("${QT_BINARY_DIR}/Qt5Core${SUFFIX}.dll" "${CMAKE_BINARY_DIR}/${CONFIGURATION}/${TARGET}/Qt5Core${SUFFIX}.dll" COPYONLY)
-		configure_file("${QT_BINARY_DIR}/Qt5Gui${SUFFIX}.dll" "${CMAKE_BINARY_DIR}/${CONFIGURATION}/${TARGET}/Qt5Gui${SUFFIX}.dll" COPYONLY)
-		configure_file("${QT_BINARY_DIR}/Qt5Network${SUFFIX}.dll" "${CMAKE_BINARY_DIR}/${CONFIGURATION}/${TARGET}/Qt5Network${SUFFIX}.dll" COPYONLY)
-		configure_file("${QT_BINARY_DIR}/Qt5Svg${SUFFIX}.dll" "${CMAKE_BINARY_DIR}/${CONFIGURATION}/${TARGET}/Qt5Svg${SUFFIX}.dll" COPYONLY)
-		configure_file("${QT_BINARY_DIR}/Qt5Widgets${SUFFIX}.dll" "${CMAKE_BINARY_DIR}/${CONFIGURATION}/${TARGET}/Qt5Widgets${SUFFIX}.dll" COPYONLY)
-		configure_file("${QT_BINARY_DIR}/Qt5WinExtras${SUFFIX}.dll" "${CMAKE_BINARY_DIR}/${CONFIGURATION}/${TARGET}/Qt5WinExtras${SUFFIX}.dll" COPYONLY)
-
-		configure_file("${QT_PLUGINS_DIR}/platforms/qwindows${SUFFIX}.dll" "${CMAKE_BINARY_DIR}/${CONFIGURATION}/${TARGET}/platforms/qwindows${SUFFIX}.dll" COPYONLY)
-
-		configure_file("${QT_PLUGINS_DIR}/styles/qwindowsvistastyle${SUFFIX}.dll" "${CMAKE_BINARY_DIR}/${CONFIGURATION}/${TARGET}/styles/qwindowsvistastyle${SUFFIX}.dll" COPYONLY)
-
-		configure_file("${QT_PLUGINS_DIR}/imageformats/qgif${SUFFIX}.dll" "${CMAKE_BINARY_DIR}/${CONFIGURATION}/${TARGET}/imageformats/qgif${SUFFIX}.dll" COPYONLY)
-		configure_file("${QT_PLUGINS_DIR}/imageformats/qicns${SUFFIX}.dll" "${CMAKE_BINARY_DIR}/${CONFIGURATION}/${TARGET}/imageformats/qicns${SUFFIX}.dll" COPYONLY)
-		configure_file("${QT_PLUGINS_DIR}/imageformats/qico${SUFFIX}.dll" "${CMAKE_BINARY_DIR}/${CONFIGURATION}/${TARGET}/imageformats/qico${SUFFIX}.dll" COPYONLY)
-		configure_file("${QT_PLUGINS_DIR}/imageformats/qjpeg${SUFFIX}.dll" "${CMAKE_BINARY_DIR}/${CONFIGURATION}/${TARGET}/imageformats/qjpeg${SUFFIX}.dll" COPYONLY)
-		configure_file("${QT_PLUGINS_DIR}/imageformats/qsvg${SUFFIX}.dll" "${CMAKE_BINARY_DIR}/${CONFIGURATION}/${TARGET}/imageformats/qsvg${SUFFIX}.dll" COPYONLY)
-		configure_file("${QT_PLUGINS_DIR}/imageformats/qtga${SUFFIX}.dll" "${CMAKE_BINARY_DIR}/${CONFIGURATION}/${TARGET}/imageformats/qtga${SUFFIX}.dll" COPYONLY)
-		configure_file("${QT_PLUGINS_DIR}/imageformats/qtiff${SUFFIX}.dll" "${CMAKE_BINARY_DIR}/${CONFIGURATION}/${TARGET}/imageformats/qtiff${SUFFIX}.dll" COPYONLY)
-		configure_file("${QT_PLUGINS_DIR}/imageformats/qwbmp${SUFFIX}.dll" "${CMAKE_BINARY_DIR}/${CONFIGURATION}/${TARGET}/imageformats/qwbmp${SUFFIX}.dll" COPYONLY)
-		configure_file("${QT_PLUGINS_DIR}/imageformats/qwebp${SUFFIX}.dll" "${CMAKE_BINARY_DIR}/${CONFIGURATION}/${TARGET}/imageformats/qwebp${SUFFIX}.dll" COPYONLY)
-	endfunction(COPY_QT_BINARIES)
-
-	COPY_QT_BINARIES(True True)
-	COPY_QT_BINARIES(True False)
-	COPY_QT_BINARIES(False True)
-	COPY_QT_BINARIES(False False)
-
-	configure_file("${CMAKE_SOURCE_DIR}/setup/icon/windows/sourcetrail.ico" "${CMAKE_BINARY_DIR}/${CONFIGURATION}/sourcetrail.ico" COPYONLY)
-
+	configure_file("${CMAKE_SOURCE_DIR}/setup/icon/windows/sourcetrail.ico" "${CMAKE_BINARY_DIR}/sourcetrail.ico" COPYONLY)
 endif()
 
 
@@ -338,7 +298,7 @@ target_include_directories(${LIB_PROJECT_NAME} SYSTEM
 	"${EXTERNAL_C_INCLUDE_PATHS}"
 )
 
-target_link_libraries(${LIB_PROJECT_NAME} ${LIB_UTILITY_PROJECT_NAME} ${LIB_GUI_PROJECT_NAME} ${Boost_LIBRARIES})
+target_link_libraries(${LIB_PROJECT_NAME} ${LIB_UTILITY_PROJECT_NAME} ${LIB_GUI_PROJECT_NAME} ${Boost_LIBRARIES} $<$<PLATFORM_ID:Windows>:bcrypt>)
 
 #configure language package defines
 configure_file(
@@ -352,7 +312,7 @@ configure_file(
 if (BUILD_CXX_LANGUAGE_PACKAGE)
 
 	set(CAPTURED_CMAKE_CXX_STANDARD ${CMAKE_CXX_STANDARD})
-	set(CMAKE_CXX_STANDARD 14)
+	set(CMAKE_CXX_STANDARD 17) # Respect to LLVM_REQUIRED_CXX_STANDARD
 	
 	add_library(${LIB_CXX_PROJECT_NAME} ${LIB_CXX_FILES})
 
@@ -377,48 +337,59 @@ if (BUILD_CXX_LANGUAGE_PACKAGE)
 
 	link_directories(${LLVM_LIBRARY_DIRS} ${CLANG_LIBRARY_DIRS} ${Boost_LIBRARY_DIRS})
 
-    if(LLVM_LINK_LLVM_DYLIB)
-        set(REQ_LLVM_LIBS LLVM)
-    else()
-        llvm_map_components_to_libnames(REQ_LLVM_LIBS
-            support core libdriver passes option
-        )
-        foreach(LLVM_TARGET ${LLVM_TARGETS_TO_BUILD})
-            get_property(lib_deps GLOBAL PROPERTY "LLVMBUILD_LIB_DEPS_LLVM${LLVM_TARGET}CodeGen")
-            list(APPEND REQ_LLVM_LIBS "LLVM${LLVM_TARGET}CodeGen")
-            list(APPEND REQ_LLVM_LIBS "${lib_deps}")
-            get_property(lib_deps GLOBAL PROPERTY "LLVMBUILD_LIB_DEPS_LLVM${LLVM_TARGET}AsmParser")
-            if (NOT "${lib_deps}" STREQUAL "")
-                list(APPEND REQ_LLVM_LIBS "LLVM${LLVM_TARGET}AsmParser")
-                list(APPEND REQ_LLVM_LIBS "${lib_deps}")
-            endif()
-        endforeach()
-    endif()
+	if(CLANG_LINK_CLANG_DYLIB)
+		set(REQ_LLVM_LIBS LLVM)
+	else()
+		llvm_map_components_to_libnames(REQ_LLVM_LIBS
+			BinaryFormat
+			BitstreamReader
+			Core
+			Demangle
+			FrontendOpenMP
+			LibDriver
+			MC
+			MCParser
+			Option
+			ProfileData
+			Remarks
+			Support
+			TextAPI
+		)
 
-    if(LLVM_LINK_LLVM_DYLIB)  # Should be CLANG_LINK_CLANG_DYLIB in future LLVM release
-        set(CLANG_LIBRARIES clang-cpp)
-    else()
-        set(CLANG_LIBRARIES
-            clangASTMatchers
-            clangFrontend
-            clangSerialization
-            clangDriver
-            clangTooling
-            clangParse
-            clangSema
-            clangStaticAnalyzerFrontend
-            clangStaticAnalyzerCheckers
-            clangStaticAnalyzerCore
-            clangAnalysis
-            clangRewriteFrontend
-            clangEdit
-            clangAST
-            clangLex
-            clangBasic
-        )
-    endif()
+		foreach(LLVM_TARGET ${LLVM_TARGETS_TO_BUILD})
+			if("LLVM${LLVM_TARGET}CodeGen" IN_LIST LLVM_AVAILABLE_LIBS)
+				get_property(lib_deps GLOBAL PROPERTY "LLVMBUILD_LIB_DEPS_LLVM${LLVM_TARGET}CodeGen")
+				list(APPEND REQ_LLVM_LIBS "LLVM${LLVM_TARGET}CodeGen")
+				list(APPEND REQ_LLVM_LIBS "${lib_deps}")
+			endif()
 
-	target_link_libraries(${LIB_CXX_PROJECT_NAME} ${LIB_UTILITY_PROJECT_NAME} ${CLANG_LIBRARIES} ${REQ_LLVM_LIBS})
+			if("LLVM${LLVM_TARGET}AsmParser" IN_LIST LLVM_AVAILABLE_LIBS)
+				get_property(lib_deps GLOBAL PROPERTY "LLVMBUILD_LIB_DEPS_LLVM${LLVM_TARGET}AsmParser")
+				list(APPEND REQ_LLVM_LIBS "LLVM${LLVM_TARGET}AsmParser")
+				list(APPEND REQ_LLVM_LIBS "${lib_deps}")
+			endif()
+		endforeach()
+	endif()
+
+	if(CLANG_LINK_CLANG_DYLIB)
+		set(REQ_CLANG_LIBS clang-cpp)
+	else()
+		set(REQ_CLANG_LIBS
+			clangAnalysis
+			clangAST
+			clangBasic
+			clangDriver
+			clangEdit
+			clangFrontend
+			clangLex
+			clangParse
+			clangSema
+			clangSerialization
+			clangTooling
+		)
+	endif()
+
+	target_link_libraries(${LIB_CXX_PROJECT_NAME} ${LIB_UTILITY_PROJECT_NAME} ${REQ_CLANG_LIBS} ${REQ_LLVM_LIBS})
 
 	if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 		target_compile_definitions(${LIB_CXX_PROJECT_NAME} PRIVATE _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS) # Due to Clang
@@ -727,9 +698,8 @@ target_include_directories(${APP_PROJECT_NAME} SYSTEM
 	"${EXTERNAL_C_INCLUDE_PATHS}"
 )
 
-# Use the Widgets module from Qt 5.
-qt5_use_modules(${APP_PROJECT_NAME} Widgets)
-qt5_use_modules(${APP_PROJECT_NAME} Network)
+# Use the Widgets module from Qt 5
+target_link_libraries(${APP_PROJECT_NAME} Qt5::Widgets Qt5::Network)
 
 # add platform specific libraries
 if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
@@ -757,9 +727,6 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 
 	get_property(QT_WIDGETS_PATH TARGET ${Qt5Widgets_LIBRARIES} PROPERTY LOCATION)
 	get_filename_component(QT_WIDGETS_PATH ${QT_WIDGETS_PATH} REALPATH)
-
-	get_property(QT_PRINT_PATH TARGET ${Qt5PrintSupport_LIBRARIES} PROPERTY LOCATION)
-	get_filename_component(QT_PRINT_PATH ${QT_PRINT_PATH} REALPATH)
 
 	get_property(QT_NETWORK_PATH TARGET ${Qt5Network_LIBRARIES} PROPERTY LOCATION)
 	get_filename_component(QT_NETWORK_PATH ${QT_NETWORK_PATH} REALPATH)
@@ -884,3 +851,259 @@ else()
 		VERBATIM
 	)
 endif ()
+
+
+# Install ----------------------------------------------------------------------
+
+set(VCPKG_APPLOCAL_DEPS ON)
+set(X_VCPKG_APPLOCAL_DEPS_INSTALL OFF)
+
+get_target_property(QMAKE_EXECUTABLE Qt5::qmake IMPORTED_LOCATION)
+
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+	include(cmake/installdirs/windows.cmake)
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	include(cmake/installdirs/linux.cmake)
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+	include(cmake/installdirs/macos.cmake)
+endif()
+
+# Use relative DESTINATION for package
+
+install(
+	TARGETS
+		${APP_PROJECT_NAME}
+		${APP_INDEXER_NAME}
+	RUNTIME_DEPENDENCY_SET deps
+	BUNDLE
+		DESTINATION ${INSTALL_BIN_DIR}
+	RUNTIME
+		DESTINATION ${INSTALL_BIN_DIR}
+		COMPONENT Executables
+)
+
+if (BUILD_CXX_LANGUAGE_PACKAGE)
+	install(CODE "
+		# Index sample projects, execute sequentially
+		execute_process(
+			COMMAND
+				$<TARGET_FILE:${APP_PROJECT_NAME}> index --full ${CMAKE_SOURCE_DIR}/bin/app/user/projects/tictactoe_cpp/tictactoe_cpp.srctrlprj
+			WORKING_DIRECTORY
+				$<TARGET_FILE_DIR:${APP_PROJECT_NAME}>
+			COMMAND_ECHO STDOUT
+			COMMAND_ERROR_IS_FATAL ANY
+		)
+		execute_process(
+			COMMAND
+				$<TARGET_FILE:${APP_PROJECT_NAME}> index --full ${CMAKE_SOURCE_DIR}/bin/app/user/projects/tutorial/tutorial.srctrlprj
+			WORKING_DIRECTORY
+				$<TARGET_FILE_DIR:${APP_PROJECT_NAME}>
+			COMMAND_ECHO STDOUT
+			COMMAND_ERROR_IS_FATAL ANY
+		)
+		"
+		COMPONENT Resources
+	)
+endif()
+
+if (BUILD_JAVA_LANGUAGE_PACKAGE)
+	install(CODE "
+		# Index sample projects, execute sequentially
+		execute_process(
+			COMMAND
+				$<TARGET_FILE:${APP_PROJECT_NAME}> index --full ${CMAKE_SOURCE_DIR}/bin/app/user/projects/javaparser/javaparser.srctrlprj
+			WORKING_DIRECTORY
+				$<TARGET_FILE_DIR:${APP_PROJECT_NAME}>
+			COMMAND_ECHO STDOUT
+			COMMAND_ERROR_IS_FATAL ANY
+		)
+		"
+		COMPONENT Resources
+	)
+endif()
+
+if (BUILD_PYTHON_LANGUAGE_PACKAGE)
+	install(CODE "
+		# Index sample projects, execute sequentially
+		execute_process(
+			COMMAND
+				$<TARGET_FILE:${APP_PROJECT_NAME}> index --full ${CMAKE_SOURCE_DIR}/bin/app/user/projects/tictactoe_py/tictactoe_py.srctrlprj
+			WORKING_DIRECTORY
+				$<TARGET_FILE_DIR:${APP_PROJECT_NAME}>
+			COMMAND_ECHO STDOUT
+			COMMAND_ERROR_IS_FATAL ANY
+		)
+		"
+		COMPONENT Resources
+	)
+endif()
+
+install(
+	DIRECTORY
+		${CMAKE_SOURCE_DIR}/bin/app/data
+		${CMAKE_SOURCE_DIR}/bin/app/user
+	DESTINATION ${INSTALL_DATA_DIR}
+	COMPONENT Resources
+	FILES_MATCHING PATTERN "*"
+	REGEX "/__pycache__/" EXCLUDE
+	REGEX "/data/install/" EXCLUDE
+	REGEX "/user/log/" EXCLUDE
+	REGEX "/user/ApplicationSettings.xml" EXCLUDE
+	REGEX "/user/window_settings.ini" EXCLUDE
+	PATTERN "*_template.xml" EXCLUDE
+)
+
+include(cmake/qt/qt5_macros.cmake)
+
+qt5_generate_deploy_script(
+	TARGET ${APP_PROJECT_NAME}
+	OUTPUT_SCRIPT QT_INSTALL_SCRIPT
+	CONTENT "
+		qt5_deploy_runtime_dependencies(
+			EXECUTABLES 
+				$<TARGET_FILE:${APP_PROJECT_NAME}>
+				$<TARGET_FILE:${APP_INDEXER_NAME}>
+			BIN_DIR ${INSTALL_BIN_DIR}
+			LIB_DIR ${INSTALL_LIB_DIR}
+			PLUGINS_DIR ${INSTALL_PLUGINS_DIR}
+		)
+	"
+)
+
+install(SCRIPT ${QT_INSTALL_SCRIPT}
+	COMPONENT Qt
+)
+
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+	install(
+		FILES
+			"${CMAKE_SOURCE_DIR}/setup/qt/windows/qt.conf"
+		DESTINATION ${INSTALL_BIN_DIR}
+		COMPONENT Qt
+	)
+
+	if(CMAKE_CL_64)
+		set(VC_TOOLS_REDIST_DIR "$ENV{VCToolsRedistDir}/x64/Microsoft.VC${MSVC_TOOLSET_VERSION}.CRT")
+		set(WINDOWS_SDK_DIR "$ENV{WindowsSdkDir}/Redist/$ENV{WindowsSDKVersion}/ucrt/DLLs/x64")
+	else()
+		set(VC_TOOLS_REDIST_DIR "$ENV{VCToolsRedistDir}/x86/Microsoft.VC${MSVC_TOOLSET_VERSION}.CRT")
+		set(WINDOWS_SDK_DIR "$ENV{WindowsSdkDir}/Redist/$ENV{WindowsSDKVersion}/ucrt/DLLs/x86")
+	endif()
+
+	cmake_path(NORMAL_PATH VC_TOOLS_REDIST_DIR)
+
+	cmake_path(NORMAL_PATH WINDOWS_SDK_DIR)
+
+	install(RUNTIME_DEPENDENCY_SET deps
+		DIRECTORIES
+			${VC_TOOLS_REDIST_DIR}
+			${WINDOWS_SDK_DIR}
+		PRE_INCLUDE_REGEXES 
+			"^ucrtbase\\.dll$"
+			"^api-ms-win-.*\\.dll$"
+			"^vccorlib140.*\\.dll$"
+			"^msvcp140.*\\.dll$"
+			"^vcruntime140.*\\.dll$"
+			"^libeay32\\.dll$"
+			"^ssleay32\\.dll$"
+		PRE_EXCLUDE_REGEXES 
+			".*"
+		POST_INCLUDE_REGEXES
+			"^.*/ucrtbase\\.dll$"
+			"^.*/api-ms-win-.*\\.dll$"
+			"^.*/vccorlib140.*\\.dll$"
+			"^.*/msvcp140.*\\.dll$"
+			"^.*/vcruntime140.*\\.dll$"
+			"^.*/libeay32\\.dll$"
+			"^.*/ssleay32\\.dll$"
+		POST_EXCLUDE_REGEXES 
+			".*"
+		RUNTIME
+			DESTINATION ${INSTALL_BIN_DIR}
+			COMPONENT DLLs
+	)
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+
+endif()
+
+
+# Package ----------------------------------------------------------------------
+
+set(CPACK_SET_DESTDIR "OFF")
+
+set(CPACK_PACKAGE_DIRECTORY "${CMAKE_SOURCE_DIR}/distr/packages")
+
+set(CPACK_PACKAGE_VENDOR "Active")
+
+set(CPACK_PACKAGE_NAME "Sourcetrail")
+
+set(CPACK_PACKAGE_VERSION_MAJOR "${VERSION_YEAR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${VERSION_COMMIT}")
+set(CPACK_PACKAGE_VERSION "${VERSION_STRING}")
+
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+	set(BITS 64)
+else()
+	set(BITS 32)
+endif()
+
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+	set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_VENDOR}-${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-Windows-${BITS}bit")
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_VENDOR}-${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-Linux-${BITS}bit")
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+	set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_VENDOR}-${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-macOS-${BITS}bit")
+endif()
+
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+	set(CPACK_GENERATOR "External")
+	set(CPACK_EXTERNAL_PACKAGE_SCRIPT "${CMAKE_BINARY_DIR}/CPackExternal.cmake")
+	set(CPACK_EXTERNAL_ENABLE_STAGING YES)
+	configure_file(
+		"${CMAKE_SOURCE_DIR}/cmake/package/windows.cmake.in"
+		"${CMAKE_BINARY_DIR}/package_windows.cmake.generate.in"
+		@ONLY
+	)
+	file(GENERATE
+		OUTPUT "${CMAKE_BINARY_DIR}/CPackExternal.cmake"
+		INPUT "${CMAKE_BINARY_DIR}/package_windows.cmake.generate.in"
+	)
+
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	set(CPACK_GENERATOR "External")
+	set(CPACK_EXTERNAL_PACKAGE_SCRIPT "${CMAKE_BINARY_DIR}/CPackExternal.cmake")
+	set(CPACK_EXTERNAL_ENABLE_STAGING YES)
+	configure_file(
+		"${CMAKE_SOURCE_DIR}/cmake/package/linux.cmake.in"
+		"${CMAKE_BINARY_DIR}/package_linux.cmake.generate.in"
+		@ONLY
+	)
+	file(GENERATE
+		OUTPUT "${CMAKE_BINARY_DIR}/CPackExternal.cmake"
+		INPUT "${CMAKE_BINARY_DIR}/package_linux.cmake.generate.in"
+	)
+
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+	set(CPACK_GENERATOR "External")
+	set(CPACK_EXTERNAL_PACKAGE_SCRIPT "${CMAKE_BINARY_DIR}/CPackExternal.cmake")
+	set(CPACK_EXTERNAL_ENABLE_STAGING YES)
+	configure_file(
+		"${CMAKE_SOURCE_DIR}/cmake/package/macos.cmake.in"
+		"${CMAKE_BINARY_DIR}/package_macos.cmake.generate.in"
+		@ONLY
+	)
+	file(GENERATE
+		OUTPUT "${CMAKE_BINARY_DIR}/CPackExternal.cmake"
+		INPUT "${CMAKE_BINARY_DIR}/package_macos.cmake.generate.in"
+	)
+
+endif()
+
+set(CPACK_SOURCE_GENERATOR "ZIP")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CPACK_PACKAGE_VENDOR}-${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-Source")
+set(CPACK_SOURCE_IGNORE_FILES "/build/;/distr/;/vcpkg/;/\\\\.git/;/\\\\.vs/")
+
+include(CPack)
