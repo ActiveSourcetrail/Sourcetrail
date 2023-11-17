@@ -141,8 +141,8 @@ void CxxParser::buildIndex(std::shared_ptr<IndexerCommandCxx> indexerCommand)
 	compileCommand.CommandLine = getCommandlineArgumentsEssential(args);
 	compileCommand.CommandLine = prependSyntaxOnlyToolArgs(compileCommand.CommandLine);
 
-	CxxCompilationDatabaseSingle compilationDatabase(compileCommand);
-	runTool(&compilationDatabase, indexerCommand->getSourceFilePath());
+	std::unique_ptr<clang::tooling::CompilationDatabase> compilationDatabase = clang::tooling::expandResponseFiles(std::make_unique<CxxCompilationDatabaseSingle>(compileCommand), llvm::vfs::getRealFileSystem());
+	runTool(compilationDatabase.get(), indexerCommand->getSourceFilePath());
 }
 
 void CxxParser::buildIndex(
