@@ -1,0 +1,24 @@
+services:
+  linux:
+    platform: linux/amd64
+    image: sourcetrail/self-hosted-runner:linux
+    build:
+        context: ../dockerfiles/self-hosted
+        platforms:
+          - linux/amd64
+        target: runner
+    devices:
+      - /dev/fuse # Needed for mounting fuse filesystem
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    shm_size: 256mb # For sourcetrail indexing
+    environment:
+      - VCPKG_BINARY_SOURCES=clear;x-gha,readwrite;
+      - URL=https://github.com/ActiveSourcetrail/Sourcetrail
+      - TOKEN=YOURTOKEN
+
+networks:
+  default:
+    name: self-hosted-runner

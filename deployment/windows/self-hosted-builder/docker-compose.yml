@@ -1,0 +1,43 @@
+services:
+  windows:
+    platform: windows/amd64
+    image: sourcetrail/self-hosted-builder:windows
+    build:
+        context: ../../../
+        dockerfile: deployment/windows/dockerfiles/self-hosted/Dockerfile
+        platforms:
+          - windows/amd64
+        target: builder
+    depends_on:
+      - vcpkg-cache-http
+    environment:
+      - MSVC_VERSION=14.37
+      - VCPKG_BINARY_SOURCES=clear;files,c:/work/source/build/.cache/vcpkg-files,readwrite;
+     #- VCPKG_BINARY_SOURCES=clear;http,http://vcpkg-cache-http:15151/{name}/{version}/{sha},readwrite;
+    volumes:
+      - packages:c:/work/source/distr/packages
+      - vcpkg-files:c:/work/source/build/.cache/vcpkg-files
+
+  vcpkg-cache-http:
+    platform: windows/amd64
+    image: sourcetrail/vcpkg-cache-http:windows
+    build:
+        context: ../dockerfiles/vcpkg-cache-http
+        platforms:
+          - windows/amd64
+    ports:
+      - 15151:15151
+    volumes:
+      - vcpkg-http:c:/app/vcpkg-cache
+
+volumes:
+  packages:
+    name: "packages"
+  vcpkg-files:
+    name: "vcpkg-files"
+  vcpkg-http:
+    name: "vcpkg-http"
+
+networks:
+  default:
+    name: self-hosted-builder

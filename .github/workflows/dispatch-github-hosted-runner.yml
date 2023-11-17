@@ -1,0 +1,101 @@
+name: dispatch-github-hosted-runner
+
+on:
+  workflow_dispatch:
+    inputs:
+      platforms:
+        description: "List of Target platforms"
+        default: '["linux", "windows", "macos"]'
+      release:
+        description: Create release
+        type: boolean
+        default: false
+        required: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        chosen: ${{ fromJSON(github.event.inputs.platforms) }}
+        arch: [x64]
+        build-type: [release]
+        platform:
+          [
+            { os: ubuntu-22.04, target: linux },
+            {
+              os: windows-2022,
+              target: windows,
+              msvc-toolset: 14.37,
+              msvc-sdk: 10.0.20348.0,
+            },
+            { os: macos-11, target: macos },
+          ]
+        exclude:
+          - chosen: linux
+            platform:
+              target: windows
+          - chosen: linux
+            platform:
+              target: macos
+          - chosen: windows
+            platform:
+              target: linux
+          - chosen: windows
+            platform:
+              target: macos
+          - chosen: macos
+            platform:
+              target: linux
+          - chosen: macos
+            platform:
+              target: windows
+
+    uses: ./.github/workflows/call-cmake-multi-platform.yml
+    with:
+      runs-on: "${{ toJSON(matrix.platform.os) }}"
+      arch: ${{ matrix.arch }}
+      build-type: ${{ matrix.build-type }}
+      platform: ${{ toJSON(matrix.platform) }}
+
+  release:
+    if: ${{ github.event.inputs.release }}
+    needs: [build]
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        shell: bash
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: . # a directory will be created for each individual artifact.
+
+      - uses: tj-actions/glob@v17
+        id: glob
+        with:
+          match-directories: false
+          follow-symbolic-links: false
+          files: |
+            */*Sourcetrail*.AppImage
+            */*Sourcetrail*.zip
+            */*Sourcetrail*.dmg
+
+      - name: Generate bodyFile
+        run: |
+          echo "SHA-256:  " >> body.md
+          echo "\`\`\`  " >> body.md
+          for file in ${{ steps.glob.outputs.paths }}; do \
+            echo "$(sha256sum "$file" | head -c 64) $(basename "$file")  " >> body.md; \
+          done
+          echo "\`\`\`  " >> body.md
+
+      - name: Release with tag
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "*/*Sourcetrail*.AppImage,*/*Sourcetrail*.zip,*/*Sourcetrail*.dmg"
+          name: ${{ needs.build.outputs.version }}
+          tag: ${{ needs.build.outputs.version }}
+          bodyFile: body.md
