@@ -1,0 +1,11 @@
+.vs
+build
+distr
+vcpkg/buildtrees
+vcpkg/downloads
+vcpkg/packages
+vcpkg/vcpkg
+vcpkg/vcpkg.exe
+bin/app/user/log
+bin/app/user/ApplicationSettings.xml
+bin/app/user/window_settings.ini

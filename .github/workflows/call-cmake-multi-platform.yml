@@ -1,0 +1,154 @@
+name: call-cmake-multi-platform
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        required: true
+        type: string
+      arch:
+        required: true
+        type: string
+      build-type:
+        required: true
+        type: string
+      platform:
+        required: true
+        type: string
+    outputs:
+      version:
+        value: ${{ jobs.cmake.outputs.version }}
+
+jobs:
+  cmake:
+    runs-on: ${{ fromJSON(inputs.runs-on) }}
+
+    outputs:
+      version: ${{ steps.build.outputs.version }}
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - if: runner.os == 'Linux'
+        name: (Linux) install packages
+        # https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2204-Readme.md
+        run: >
+          sudo apt-get update && sudo apt-get install -y
+          cmake
+          ninja-build
+
+          # For Qt
+          # https://doc.qt.io/qt-5/linux-requirements.html
+          '^libxcb.*-dev'
+          libgl1-mesa-dev
+          libglu1-mesa-dev
+          libx11-dev
+          libx11-xcb-dev
+          libxcb-icccm4
+          libxcb-image0
+          libxcb-keysyms1
+          libxcb-render-util0
+          libxcb-xinerama0
+          libxext-dev
+          libxi-dev
+          libxkbcommon-dev
+          libxkbcommon-x11-dev
+          libxrender-dev
+          mesa-common-dev
+
+          # For linuxdeploy
+          # https://github.com/linuxdeploy/linuxdeploy-plugin-qt
+          libfuse2
+          file
+          imagemagick
+
+      - if: runner.os == 'Linux'
+        name: (Linux) install linuxdeploy
+        run: |
+          wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+          chmod +x linuxdeploy*.AppImage
+          mkdir -p /opt/linuxdeploy
+          mv -n linuxdeploy*.AppImage /opt/linuxdeploy/
+
+      - if: runner.os == 'Windows'
+        name: (Windows) install packages
+        # https://github.com/actions/runner-images/blob/main/images/win/Windows2019-Readme.md
+        run: |
+          choco install cmake --version 3.27.7 -y --installargs 'ADD_CMAKE_TO_PATH=User'
+          choco install ninja --version 1.11.1 -y
+
+      - if: runner.os == 'macOS'
+        name: (macOS) install packages
+        # https://github.com/actions/runner-images/blob/main/images/macos/macos-11-Readme.md
+        run: |
+          brew install cmake
+          brew install ninja
+          brew install pkg-config
+          brew install coreutils
+          brew install imagemagick
+
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          submodules: recursive
+
+      - name: Checkout vcpkg
+        run: |
+          git submodule update --init --recursive
+
+      - name: Configure vcpkg Binary Caching - Export GitHub Actions Cache environment variables
+        # https://learn.microsoft.com/en-us/vcpkg/users/binarycaching#gha
+        uses: actions/github-script@v6
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '')
+
+      - name: Configure vcpkg Binary Caching - Add GitHub Actions Cache as a provider
+        # https://learn.microsoft.com/en-us/vcpkg/users/config-environment#vcpkg_binary_sources
+        run: |
+          echo "VCPKG_BINARY_SOURCES=clear;x-gha,readwrite" >> $GITHUB_ENV
+
+      - name: Set reusable strings
+        id: strings
+        run: |
+          echo "preset-name=${{ inputs.arch }}-${{ fromJSON(inputs.platform).target }}-${{ inputs.build-type }}" >> "$GITHUB_OUTPUT"
+          echo "binary-dir=./build/${{ inputs.arch }}-${{ fromJSON(inputs.platform).target }}-${{ inputs.build-type }}" >> "$GITHUB_OUTPUT"
+          echo "install-dir=./distr/${{ inputs.arch }}-${{ fromJSON(inputs.platform).target }}-${{ inputs.build-type }}" >> "$GITHUB_OUTPUT"
+
+      - if: runner.os == 'Windows'
+        name: (Windows) setup msvc
+        uses: TheMrMilchmann/setup-msvc-dev@v3
+        with:
+          arch: ${{ inputs.arch }}
+          toolset: ${{ fromJSON(inputs.platform).msvc-toolset }}
+          sdk: ${{ fromJSON(inputs.platform).msvc-sdk }}
+
+      - name: Configure
+        run: |
+          cmake --preset ${{ steps.strings.outputs.preset-name }}
+
+      - name: Build
+        run: |
+          cmake --build ${{ steps.strings.outputs.binary-dir }} --target package
+
+      - name: Set version strings
+        id: build
+        run: |
+          version=$(cat ${{ steps.strings.outputs.binary-dir }}/version.txt)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          version=$(cat ${{ steps.strings.outputs.binary-dir }}/version.txt)
+          echo "artifact-name=" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ fromJSON(inputs.platform).os }}-${{ steps.strings.outputs.preset-name }}-${{ steps.build.outputs.version }}
+          path: |
+            distr/packages/*Sourcetrail*.zip
+            distr/packages/*Sourcetrail*.AppImage
+            distr/packages/*Sourcetrail*.dmg
+          if-no-files-found: error
