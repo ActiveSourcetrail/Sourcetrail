@@ -164,7 +164,7 @@ void CxxAstVisitorComponentIndexer::beginTraverseLambdaCapture(
 {
 	if ((!lambdaExpr->isInitCapture(capture)) && (capture->capturesVariable()))
 	{
-		clang::VarDecl* d = capture->getCapturedVar();
+		clang::ValueDecl* d = capture->getCapturedVar();
 		if (utility::isLocalVariable(d) || utility::isParameter(d))
 		{
 			if (!d->getNameAsString().empty())	  // don't record anonymous parameters
@@ -916,16 +916,16 @@ ParseLocation CxxAstVisitorComponentIndexer::getSignatureLocation(clang::Functio
 		while (sm.isBeforeInTranslationUnit(endLoc, signatureRange.getEnd()))
 		{
 			llvm::Optional<clang::Token> token = clang::Lexer::findNextToken(endLoc, sm, opts);
-			if (token.hasValue())
+			if (token)
 			{
-				const clang::tok::TokenKind tokenKind = token.getValue().getKind();
+				const clang::tok::TokenKind tokenKind = token->getKind();
 				if (tokenKind == clang::tok::l_brace || tokenKind == clang::tok::colon)
 				{
 					signatureRange.setEnd(endLoc);
 					return getParseLocation(signatureRange);
 				}
 
-				clang::SourceLocation nextEndLoc = token.getValue().getLocation();
+				clang::SourceLocation nextEndLoc = token->getLocation();
 				if (nextEndLoc == endLoc)
 				{
 					return ParseLocation();
