@@ -7,5 +7,6 @@ Malte Langkabel (@mlangkabel) <mlangkabel@coati.io>
 Manuel Dobusch
 Viktoria Pfausler
 Louis St-Amour (@LouisStAmour) <LouisStAmour@gmail.com>
+(@sumof2primes) <sumof2primes@gmail.com>
 
 Note: (@user) means a github user name.
