@@ -100,8 +100,8 @@ endif()
 
 if (TREAT_WARNINGS_AS_ERRORS)
 	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-		# Visual Studio 2017 version 15.9 <= Version <= Visual Studio 2019 Version 16.4
-		if ((MSVC_VERSION GREATER_EQUAL 1916) AND (MSVC_VERSION LESS_EQUAL 1924))
+		# Visual Studio 2017 version 15.9 <= Version <= Visual Studio 2022 Version 17.X
+		if ((MSVC_VERSION GREATER_EQUAL 1916) AND (MSVC_TOOLSET_VERSION LESS_EQUAL 143))
 			# Warning 4003: not enough actual parameters for macro 'identifier'
 			# Warning 4250: 'class1' inherits 'class2::member' via dominance
 			set(WARNINGS_LIST "/wd4003 /wd4250")
