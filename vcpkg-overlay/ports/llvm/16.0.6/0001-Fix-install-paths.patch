@@ -1,0 +1,183 @@
+diff --git a/clang/cmake/modules/CMakeLists.txt b/clang/cmake/modules/CMakeLists.txt
+index d2d68121371b..8cbcd2661f0e 100644
+--- a/clang/cmake/modules/CMakeLists.txt
++++ b/clang/cmake/modules/CMakeLists.txt
+@@ -6,13 +6,13 @@ include(FindPrefixFromConfig)
+ # Generate a list of CMake library targets so that other CMake projects can
+ # link against them. LLVM calls its version of this file LLVMExports.cmake, but
+ # the usual CMake convention seems to be ${Project}Targets.cmake.
+-set(CLANG_INSTALL_PACKAGE_DIR "${CMAKE_INSTALL_PACKAGEDIR}/clang" CACHE STRING
++set(CLANG_INSTALL_PACKAGE_DIR "share/clang" CACHE STRING
+   "Path for CMake subdirectory for Clang (defaults to '${CMAKE_INSTALL_PACKAGEDIR}/clang')")
+ # CMAKE_INSTALL_PACKAGEDIR might be absolute, so don't reuse below.
+ set(clang_cmake_builddir "${CMAKE_BINARY_DIR}/lib${LLVM_LIBDIR_SUFFIX}/cmake/clang")
+ 
+ # Keep this in sync with llvm/cmake/CMakeLists.txt!
+-set(LLVM_INSTALL_PACKAGE_DIR "${CMAKE_INSTALL_PACKAGEDIR}/llvm" CACHE STRING
++set(LLVM_INSTALL_PACKAGE_DIR "share/llvm" CACHE STRING
+   "Path for CMake subdirectory for LLVM (defaults to '${CMAKE_INSTALL_PACKAGEDIR}/llvm')")
+ # CMAKE_INSTALL_PACKAGEDIR might be absolute, so don't reuse below.
+ string(REPLACE "${CMAKE_CFG_INTDIR}" "." llvm_cmake_builddir "${LLVM_LIBRARY_DIR}")
+diff --git a/clang/utils/hmaptool/CMakeLists.txt b/clang/utils/hmaptool/CMakeLists.txt
+index 511268069bd1..72915ec66504 100644
+--- a/clang/utils/hmaptool/CMakeLists.txt
++++ b/clang/utils/hmaptool/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-install(PROGRAMS hmaptool DESTINATION "${CLANG_TOOLS_INSTALL_DIR}" COMPONENT hmaptool)
++install(PROGRAMS hmaptool DESTINATION "${LLVM_TOOLS_INSTALL_DIR}" COMPONENT hmaptool)
+ add_custom_target(hmaptool ALL DEPENDS "hmaptool")
+ set_target_properties(hmaptool PROPERTIES FOLDER "Utils")
+ 
+diff --git a/flang/cmake/modules/CMakeLists.txt b/flang/cmake/modules/CMakeLists.txt
+index 4c0f9ab19cd8..4ddf61983097 100644
+--- a/flang/cmake/modules/CMakeLists.txt
++++ b/flang/cmake/modules/CMakeLists.txt
+@@ -5,13 +5,13 @@ include(FindPrefixFromConfig)
+ # Generate a list of CMake library targets so that other CMake projects can
+ # link against them. LLVM calls its version of this file LLVMExports.cmake, but
+ # the usual CMake convention seems to be ${Project}Targets.cmake.
+-set(FLANG_INSTALL_PACKAGE_DIR "${CMAKE_INSTALL_PACKAGEDIR}/flang" CACHE STRING
++set(FLANG_INSTALL_PACKAGE_DIR "share/flang" CACHE STRING
+   "Path for CMake subdirectory for Flang (defaults to '${CMAKE_INSTALL_PACKAGEDIR}/flang')")
+ # CMAKE_INSTALL_PACKAGEDIR might be absolute, so don't reuse below.
+ set(flang_cmake_builddir "${CMAKE_BINARY_DIR}/lib${LLVM_LIBDIR_SUFFIX}/cmake/flang")
+ 
+ # Keep this in sync with llvm/cmake/CMakeLists.txt!
+-set(LLVM_INSTALL_PACKAGE_DIR "${CMAKE_INSTALL_PACKAGEDIR}/llvm" CACHE STRING
++set(LLVM_INSTALL_PACKAGE_DIR "share/llvm" CACHE STRING
+   "Path for CMake subdirectory for LLVM (defaults to '${CMAKE_INSTALL_PACKAGEDIR}/llvm')")
+ # CMAKE_INSTALL_PACKAGEDIR might be absolute, so don't reuse below.
+ string(REPLACE "${CMAKE_CFG_INTDIR}" "." llvm_cmake_builddir "${LLVM_LIBRARY_DIR}")
+diff --git a/lld/cmake/modules/CMakeLists.txt b/lld/cmake/modules/CMakeLists.txt
+index 66db0354da65..f3af22dc884e 100644
+--- a/lld/cmake/modules/CMakeLists.txt
++++ b/lld/cmake/modules/CMakeLists.txt
+@@ -5,13 +5,13 @@ include(FindPrefixFromConfig)
+ # Generate a list of CMake library targets so that other CMake projects can
+ # link against them. LLVM calls its version of this file LLVMExports.cmake, but
+ # the usual CMake convention seems to be ${Project}Targets.cmake.
+-set(LLD_INSTALL_PACKAGE_DIR "${CMAKE_INSTALL_PACKAGEDIR}/lld" CACHE STRING
++set(LLD_INSTALL_PACKAGE_DIR "share/lld" CACHE STRING
+   "Path for CMake subdirectory for LLD (defaults to '${CMAKE_INSTALL_PACKAGEDIR}/lld')")
+ # CMAKE_INSTALL_PACKAGEDIR might be absolute, so don't reuse below.
+ set(lld_cmake_builddir "${CMAKE_BINARY_DIR}/lib${LLVM_LIBDIR_SUFFIX}/cmake/lld")
+ 
+ # Keep this in sync with llvm/cmake/CMakeLists.txt!
+-set(LLVM_INSTALL_PACKAGE_DIR "${CMAKE_INSTALL_PACKAGEDIR}/llvm" CACHE STRING
++set(LLVM_INSTALL_PACKAGE_DIR "share/llvm" CACHE STRING
+   "Path for CMake subdirectory for LLVM (defaults to '${CMAKE_INSTALL_PACKAGEDIR}/llvm')")
+ # CMAKE_INSTALL_PACKAGEDIR might be absolute, so don't reuse below.
+ string(REPLACE "${CMAKE_CFG_INTDIR}" "." llvm_cmake_builddir "${LLVM_LIBRARY_DIR}")
+diff --git a/llvm/CMakeLists.txt b/llvm/CMakeLists.txt
+index 2b9315c22ed9..690a2c367e35 100644
+--- a/llvm/CMakeLists.txt
++++ b/llvm/CMakeLists.txt
+@@ -384,7 +384,7 @@ endif()
+ # LLVM_INSTALL_PACKAGE_DIR needs to be declared prior to adding the tools
+ # subdirectory in order to have the value available for llvm-config.
+ include(GNUInstallPackageDir)
+-set(LLVM_INSTALL_PACKAGE_DIR "${CMAKE_INSTALL_PACKAGEDIR}/llvm" CACHE STRING
++set(LLVM_INSTALL_PACKAGE_DIR "share/llvm" CACHE STRING
+   "Path for CMake subdirectory for LLVM (defaults to '${CMAKE_INSTALL_PACKAGEDIR}/llvm')")
+ 
+ set(LLVM_TOOLS_INSTALL_DIR "${CMAKE_INSTALL_BINDIR}" CACHE STRING
+diff --git a/llvm/cmake/modules/AddLLVM.cmake b/llvm/cmake/modules/AddLLVM.cmake
+index 93e6d67551de..5defb9df4ea6 100644
+--- a/llvm/cmake/modules/AddLLVM.cmake
++++ b/llvm/cmake/modules/AddLLVM.cmake
+@@ -1127,7 +1127,7 @@ function(process_llvm_pass_plugins)
+       endif()
+       # LLVM_INSTALL_PACKAGE_DIR might be absolute, so don't reuse below.
+       string(REPLACE "${CMAKE_CFG_INTDIR}" "." llvm_cmake_builddir "${LLVM_LIBRARY_DIR}")
+-      set(llvm_cmake_builddir "${llvm_cmake_builddir}/cmake/llvm")
++      set(llvm_cmake_builddir "${LLVM_BINARY_DIR}/share/llvm")
+       file(WRITE
+           "${llvm_cmake_builddir}/LLVMConfigExtensions.cmake"
+           "set(LLVM_STATIC_EXTENSIONS ${LLVM_STATIC_EXTENSIONS})")
+diff --git a/llvm/cmake/modules/CMakeLists.txt b/llvm/cmake/modules/CMakeLists.txt
+index d99af79aa38e..a60bd879ad0b 100644
+--- a/llvm/cmake/modules/CMakeLists.txt
++++ b/llvm/cmake/modules/CMakeLists.txt
+@@ -4,7 +4,7 @@ include(FindPrefixFromConfig)
+ 
+ # CMAKE_INSTALL_PACKAGEDIR might be absolute, so don't reuse below.
+ string(REPLACE "${CMAKE_CFG_INTDIR}" "." llvm_cmake_builddir "${LLVM_LIBRARY_DIR}")
+-set(llvm_cmake_builddir "${llvm_cmake_builddir}/cmake/llvm")
++set(llvm_cmake_builddir "${LLVM_BINARY_DIR}/share/llvm")
+ 
+ # First for users who use an installed LLVM, create the LLVMExports.cmake file.
+ set(LLVM_EXPORTS_FILE ${llvm_cmake_builddir}/LLVMExports.cmake)
+diff --git a/mlir/cmake/modules/CMakeLists.txt b/mlir/cmake/modules/CMakeLists.txt
+index 254cfb6e05ca..017564e1039e 100644
+--- a/mlir/cmake/modules/CMakeLists.txt
++++ b/mlir/cmake/modules/CMakeLists.txt
+@@ -6,17 +6,17 @@ include(FindPrefixFromConfig)
+ # Generate a list of CMake library targets so that other CMake projects can
+ # link against them. LLVM calls its version of this file LLVMExports.cmake, but
+ # the usual CMake convention seems to be ${Project}Targets.cmake.
+-set(MLIR_INSTALL_PACKAGE_DIR "${CMAKE_INSTALL_PACKAGEDIR}/mlir" CACHE STRING
++set(MLIR_INSTALL_PACKAGE_DIR "share/mlir" CACHE STRING
+   "Path for CMake subdirectory for Polly (defaults to '${CMAKE_INSTALL_PACKAGEDIR}/polly')")
+ # CMAKE_INSTALL_PACKAGEDIR might be absolute, so don't reuse below.
+-set(mlir_cmake_builddir "${CMAKE_BINARY_DIR}/lib${LLVM_LIBDIR_SUFFIX}/cmake/mlir")
++set(mlir_cmake_builddir "${CMAKE_BINARY_DIR}/share/mlir")
+ 
+ # Keep this in sync with llvm/cmake/CMakeLists.txt!
+-set(LLVM_INSTALL_PACKAGE_DIR "${CMAKE_INSTALL_PACKAGEDIR}/llvm" CACHE STRING
++set(LLVM_INSTALL_PACKAGE_DIR "share/llvm" CACHE STRING
+   "Path for CMake subdirectory for LLVM (defaults to '${CMAKE_INSTALL_PACKAGEDIR}/llvm')")
+ # CMAKE_INSTALL_PACKAGEDIR might be absolute, so don't reuse below.
+ string(REPLACE "${CMAKE_CFG_INTDIR}" "." llvm_cmake_builddir "${LLVM_LIBRARY_DIR}")
+-set(llvm_cmake_builddir "${llvm_cmake_builddir}/cmake/llvm")
++set(llvm_cmake_builddir "${LLVM_BINARY_DIR}/share/llvm")
+ 
+ get_property(MLIR_EXPORTS GLOBAL PROPERTY MLIR_EXPORTS)
+ export(TARGETS ${MLIR_EXPORTS} FILE ${mlir_cmake_builddir}/MLIRTargets.cmake)
+diff --git a/mlir/test/CMakeLists.txt b/mlir/test/CMakeLists.txt
+index 8e17a24efc54..05315a590867 100644
+--- a/mlir/test/CMakeLists.txt
++++ b/mlir/test/CMakeLists.txt
+@@ -8,7 +8,7 @@ endif()
+ # Provide the MLIR CMake module dir so that the out of tree Standalone
+ # dialect and can add it to the module path.
+ set(MLIR_CMAKE_DIR
+-  "${CMAKE_BINARY_DIR}/lib${LLVM_LIBDIR_SUFFIX}/cmake/mlir")
++  "${CMAKE_BINARY_DIR}/share/mlir")
+ 
+ # Passed to lit.site.cfg.py.in to set up the path where to find libraries.
+ set(MLIR_LIB_DIR ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+diff --git a/openmp/tools/Modules/CMakeLists.txt b/openmp/tools/Modules/CMakeLists.txt
+index 22d818eea72d..75aacc4468d4 100644
+--- a/openmp/tools/Modules/CMakeLists.txt
++++ b/openmp/tools/Modules/CMakeLists.txt
+@@ -12,4 +12,4 @@
+ 
+ 
+ install(FILES "FindOpenMPTarget.cmake"
+-              DESTINATION "${OPENMP_INSTALL_LIBDIR}/cmake/openmp")
++              DESTINATION "share/openmp")
+diff --git a/polly/cmake/CMakeLists.txt b/polly/cmake/CMakeLists.txt
+index b6181fbe4cc5..9d2aae738d8e 100644
+--- a/polly/cmake/CMakeLists.txt
++++ b/polly/cmake/CMakeLists.txt
+@@ -4,16 +4,16 @@ include(GNUInstallPackageDir)
+ include(ExtendPath)
+ include(FindPrefixFromConfig)
+ 
+-set(POLLY_INSTALL_PACKAGE_DIR "${CMAKE_INSTALL_PACKAGEDIR}/polly" CACHE STRING
++set(POLLY_INSTALL_PACKAGE_DIR "share/polly" CACHE STRING
+   "Path for CMake subdirectory for Polly (defaults to '${CMAKE_INSTALL_PACKAGEDIR}/polly')")
+ # CMAKE_INSTALL_PACKAGEDIR might be absolute, so don't reuse below.
+-set(polly_cmake_builddir "${POLLY_BINARY_DIR}/lib${LLVM_LIBDIR_SUFFIX}/cmake/polly")
++set(polly_cmake_builddir "${POLLY_BINARY_DIR}/share/polly")
+ 
+-set(LLVM_INSTALL_PACKAGE_DIR "${CMAKE_INSTALL_PACKAGEDIR}/llvm" CACHE STRING
++set(LLVM_INSTALL_PACKAGE_DIR "share/llvm" CACHE STRING
+   "Path for CMake subdirectory for LLVM (defaults to '${CMAKE_INSTALL_PACKAGEDIR}/llvm')")
+ # CMAKE_INSTALL_PACKAGEDIR might be absolute, so don't reuse below.
+ string(REPLACE "${CMAKE_CFG_INTDIR}" "." llvm_cmake_builddir "${LLVM_LIBRARY_DIR}")
+-set(llvm_cmake_builddir "${llvm_cmake_builddir}/cmake/llvm")
++set(llvm_cmake_builddir "${LLVM_BINARY_DIR}/share/llvm")
+ 
+ if (CMAKE_CONFIGURATION_TYPES)
+   set(POLLY_EXPORTS_FILE_NAME "PollyExports-$<LOWER_CASE:$<CONFIG>>.cmake")

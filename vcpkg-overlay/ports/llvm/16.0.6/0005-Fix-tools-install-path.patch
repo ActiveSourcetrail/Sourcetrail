@@ -1,0 +1,183 @@
+diff --git a/clang-tools-extra/clang-tidy/tool/CMakeLists.txt b/clang-tools-extra/clang-tidy/tool/CMakeLists.txt
+index 3ce552872015..e09b917ae5f8 100644
+--- a/clang-tools-extra/clang-tidy/tool/CMakeLists.txt
++++ b/clang-tools-extra/clang-tidy/tool/CMakeLists.txt
+@@ -64,6 +64,6 @@ install(PROGRAMS clang-tidy-diff.py
+   DESTINATION "${CMAKE_INSTALL_DATADIR}/clang"
+   COMPONENT clang-tidy)
+ install(PROGRAMS run-clang-tidy.py
+-  DESTINATION "${CMAKE_INSTALL_BINDIR}"
++  DESTINATION "${LLVM_TOOLS_INSTALL_DIR}"
+   COMPONENT clang-tidy
+   RENAME run-clang-tidy)
+diff --git a/clang-tools-extra/modularize/CMakeLists.txt b/clang-tools-extra/modularize/CMakeLists.txt
+index 28635ca1089d..8550d2cb35d8 100644
+--- a/clang-tools-extra/modularize/CMakeLists.txt
++++ b/clang-tools-extra/modularize/CMakeLists.txt
+@@ -24,5 +24,5 @@ clang_target_link_libraries(modularize
+   )
+ 
+ install(TARGETS modularize
+-        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
++        RUNTIME DESTINATION "${LLVM_TOOLS_INSTALL_DIR}"
+         COMPONENT clang-extras)
+diff --git a/clang/cmake/modules/AddClang.cmake b/clang/cmake/modules/AddClang.cmake
+index 75b0080f6715..96ac1dc9a86f 100644
+--- a/clang/cmake/modules/AddClang.cmake
++++ b/clang/cmake/modules/AddClang.cmake
+@@ -169,7 +169,7 @@ macro(add_clang_tool name)
+       get_target_export_arg(${name} Clang export_to_clangtargets)
+       install(TARGETS ${name}
+         ${export_to_clangtargets}
+-        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
++        RUNTIME DESTINATION "${LLVM_TOOLS_INSTALL_DIR}"
+         COMPONENT ${name})
+ 
+       if(NOT LLVM_ENABLE_IDE)
+diff --git a/clang/tools/c-index-test/CMakeLists.txt b/clang/tools/c-index-test/CMakeLists.txt
+index 0ae1b4e55244..e8a34e136194 100644
+--- a/clang/tools/c-index-test/CMakeLists.txt
++++ b/clang/tools/c-index-test/CMakeLists.txt
+@@ -49,7 +49,7 @@ if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
+     set_property(TARGET c-index-test APPEND PROPERTY INSTALL_RPATH
+        "@executable_path/../../lib")
+   else()
+-    set(INSTALL_DESTINATION "${CMAKE_INSTALL_BINDIR}")
++    set(INSTALL_DESTINATION "${LLVM_TOOLS_INSTALL_DIR}")
+   endif()
+ 
+   install(TARGETS c-index-test
+diff --git a/clang/tools/clang-format/CMakeLists.txt b/clang/tools/clang-format/CMakeLists.txt
+index 30c93f8667c8..5551676f3512 100644
+--- a/clang/tools/clang-format/CMakeLists.txt
++++ b/clang/tools/clang-format/CMakeLists.txt
+@@ -36,5 +36,5 @@ install(FILES clang-format.py
+   DESTINATION "${CMAKE_INSTALL_DATADIR}/clang"
+   COMPONENT clang-format)
+ install(PROGRAMS git-clang-format
+-  DESTINATION "${CMAKE_INSTALL_BINDIR}"
++  DESTINATION "${LLVM_TOOLS_INSTALL_DIR}"
+   COMPONENT clang-format)
+diff --git a/clang/tools/scan-build-py/CMakeLists.txt b/clang/tools/scan-build-py/CMakeLists.txt
+index 3aca22c0b0a8..410088caefc0 100644
+--- a/clang/tools/scan-build-py/CMakeLists.txt
++++ b/clang/tools/scan-build-py/CMakeLists.txt
+@@ -43,7 +43,7 @@ foreach(BinFile ${BinFiles})
+                          ${CMAKE_BINARY_DIR}/bin/scan-build-py
+                        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/bin/scan-build)
+     install (PROGRAMS "bin/scan-build"
+-             DESTINATION "${CMAKE_INSTALL_BINDIR}"
++             DESTINATION "${LLVM_TOOLS_INSTALL_DIR}"
+              RENAME scan-build-py
+              COMPONENT scan-build-py)
+     list(APPEND Depends ${CMAKE_BINARY_DIR}/bin/scan-build-py)
+@@ -56,7 +56,7 @@ foreach(BinFile ${BinFiles})
+                          ${CMAKE_BINARY_DIR}/bin/
+                        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BinFile})
+     install(PROGRAMS bin/${BinFile}
+-            DESTINATION "${CMAKE_INSTALL_BINDIR}"
++            DESTINATION "${LLVM_TOOLS_INSTALL_DIR}"
+             COMPONENT scan-build-py)
+     list(APPEND Depends ${CMAKE_BINARY_DIR}/bin/${BinFile})
+   endif()
+diff --git a/clang/tools/scan-build/CMakeLists.txt b/clang/tools/scan-build/CMakeLists.txt
+index ef687b0e90a1..a52af70443c3 100644
+--- a/clang/tools/scan-build/CMakeLists.txt
++++ b/clang/tools/scan-build/CMakeLists.txt
+@@ -47,7 +47,7 @@ if(CLANG_INSTALL_SCANBUILD)
+                        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BinFile})
+     list(APPEND Depends ${CMAKE_BINARY_DIR}/bin/${BinFile})
+     install(PROGRAMS bin/${BinFile}
+-            DESTINATION "${CMAKE_INSTALL_BINDIR}"
++            DESTINATION "${LLVM_TOOLS_INSTALL_DIR}"
+             COMPONENT scan-build)
+   endforeach()
+ 
+diff --git a/clang/tools/scan-view/CMakeLists.txt b/clang/tools/scan-view/CMakeLists.txt
+index 07aec76ee66f..ca6a3380ad0c 100644
+--- a/clang/tools/scan-view/CMakeLists.txt
++++ b/clang/tools/scan-view/CMakeLists.txt
+@@ -20,7 +20,7 @@ if(CLANG_INSTALL_SCANVIEW)
+                        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BinFile})
+     list(APPEND Depends ${CMAKE_BINARY_DIR}/bin/${BinFile})
+     install(PROGRAMS bin/${BinFile}
+-            DESTINATION "${CMAKE_INSTALL_BINDIR}"
++            DESTINATION "${LLVM_TOOLS_INSTALL_DIR}"
+             COMPONENT scan-view)
+   endforeach()
+ 
+diff --git a/flang/cmake/modules/AddFlang.cmake b/flang/cmake/modules/AddFlang.cmake
+index c54c30dbf6df..9bc7d2c8070e 100644
+--- a/flang/cmake/modules/AddFlang.cmake
++++ b/flang/cmake/modules/AddFlang.cmake
+@@ -110,7 +110,7 @@ macro(add_flang_tool name)
+     get_target_export_arg(${name} Flang export_to_flangtargets)
+     install(TARGETS ${name}
+       ${export_to_flangtargets}
+-      RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
++      RUNTIME DESTINATION "${LLVM_TOOLS_INSTALL_DIR}"
+       COMPONENT ${name})
+ 
+     if(NOT LLVM_ENABLE_IDE)
+diff --git a/flang/tools/f18/CMakeLists.txt b/flang/tools/f18/CMakeLists.txt
+index b046850557d0..60b247e4eea2 100644
+--- a/flang/tools/f18/CMakeLists.txt
++++ b/flang/tools/f18/CMakeLists.txt
+@@ -61,7 +61,7 @@ if (NOT WIN32)
+     @ONLY
+   )
+   add_custom_target(flang-to-external-fc ALL DEPENDS ${CMAKE_BINARY_DIR}/bin/flang-to-external-fc)
+-  install(PROGRAMS ${CMAKE_BINARY_DIR}/bin/flang-to-external-fc DESTINATION "${CMAKE_INSTALL_BINDIR}")
++  install(PROGRAMS ${CMAKE_BINARY_DIR}/bin/flang-to-external-fc DESTINATION "${LLVM_TOOLS_INSTALL_DIR}")
+ endif()
+ 
+ # TODO Move this to a more suitable location
+diff --git a/flang/tools/flang-driver/CMakeLists.txt b/flang/tools/flang-driver/CMakeLists.txt
+index 3ce8b407450d..af9cdec0879c 100644
+--- a/flang/tools/flang-driver/CMakeLists.txt
++++ b/flang/tools/flang-driver/CMakeLists.txt
+@@ -43,4 +43,4 @@ if(FLANG_PLUGIN_SUPPORT)
+   export_executable_symbols_for_plugins(flang-new)
+ endif()
+ 
+-install(TARGETS flang-new DESTINATION "${CMAKE_INSTALL_BINDIR}")
++install(TARGETS flang-new DESTINATION "${LLVM_TOOLS_INSTALL_DIR}")
+diff --git a/lld/cmake/modules/AddLLD.cmake b/lld/cmake/modules/AddLLD.cmake
+index d3924f7243d4..f328b62ad8c8 100644
+--- a/lld/cmake/modules/AddLLD.cmake
++++ b/lld/cmake/modules/AddLLD.cmake
+@@ -47,7 +47,7 @@ macro(add_lld_tool name)
+     get_target_export_arg(${name} LLD export_to_lldtargets)
+     install(TARGETS ${name}
+       ${export_to_lldtargets}
+-      RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
++      RUNTIME DESTINATION "${LLVM_TOOLS_INSTALL_DIR}"
+       COMPONENT ${name})
+ 
+     if(NOT CMAKE_CONFIGURATION_TYPES)
+diff --git a/lld/tools/lld/CMakeLists.txt b/lld/tools/lld/CMakeLists.txt
+index 12628395680b..d79914e1a9ca 100644
+--- a/lld/tools/lld/CMakeLists.txt
++++ b/lld/tools/lld/CMakeLists.txt
+@@ -29,7 +29,7 @@ lld_target_link_libraries(lld
+   )
+ 
+ install(TARGETS lld
+-  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
++  RUNTIME DESTINATION "${LLVM_TOOLS_INSTALL_DIR}")
+ 
+ if(NOT LLD_SYMLINKS_TO_CREATE)
+   set(LLD_SYMLINKS_TO_CREATE
+diff --git a/lldb/cmake/modules/AddLLDB.cmake b/lldb/cmake/modules/AddLLDB.cmake
+index a5be4afb40fb..31821a9a321d 100644
+--- a/lldb/cmake/modules/AddLLDB.cmake
++++ b/lldb/cmake/modules/AddLLDB.cmake
+@@ -189,7 +189,7 @@ function(add_lldb_executable name)
+   endif()
+ 
+   if(ARG_GENERATE_INSTALL)
+-    set(install_dest bin)
++    set(install_dest "${LLVM_TOOLS_INSTALL_DIR}")
+     if(ARG_INSTALL_PREFIX)
+       set(install_dest ${ARG_INSTALL_PREFIX})
+     endif()

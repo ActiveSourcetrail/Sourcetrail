@@ -150,7 +150,7 @@ endif()
 
 if (BUILD_CXX_LANGUAGE_PACKAGE)
 
-	find_package(LLVM 11 REQUIRED)
+	find_package(LLVM 16 REQUIRED)
 	find_package(Clang REQUIRED)
 
 	if (LLVM_FOUND)
