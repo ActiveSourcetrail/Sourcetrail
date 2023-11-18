@@ -674,7 +674,7 @@ This dialog is shown after indexing was stopped, giving you information about in
 * **Documentation**
     * Opens this documentation of Sourcetrail in your web browser by URL.
 * **Changelog**
-    * Opens the [changelog](https://github.com/CoatiSoftware/SourcetrailBugTracker#changelog) of Sourcetrail in your web browser by URL.
+    * Opens the [changelog](https://github.com/CoatiSoftware/Sourcetrail/blob/master/CHANGELOG.md) of Sourcetrail in your web browser by URL.
 * **Bug Tracker**
     * Opens Sourcetrail's bug tracker in your web browser by URL.
 * **License**
