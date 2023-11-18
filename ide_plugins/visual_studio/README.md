@@ -9,4 +9,4 @@ The extension is available in the Visual Studio Marketplace. To install this ext
 * press `Ctrl` + `E` and enter "Sourcetrail Extension" into the search bar
 * click the install button
 
-Link to the repository: [vs-sourcetrail](https://github.com/CoatiSoftware/vs-sourcetrail).
+Link to the repository: [vs-sourcetrail](https://github.com/ActiveSourcetrail/vs-sourcetrail).

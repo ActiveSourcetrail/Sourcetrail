@@ -199,7 +199,7 @@ void QtStartScreen::setupStartScreen()
 			[]()
 			{
 				QDesktopServices::openUrl(QUrl(
-					QStringLiteral("https://github.com/CoatiSoftware/Sourcetrail"),
+					QStringLiteral("https://github.com/ActiveSourcetrail/Sourcetrail"),
 					QUrl::TolerantMode));
 			});
 		col->addWidget(githubButton);

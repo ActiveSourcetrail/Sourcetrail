@@ -21,7 +21,7 @@ function(AddLicense softwareName softwareVersion softwareURL licenseFile)
 endfunction(AddLicense)
 
 ReadLicense(${CMAKE_SOURCE_DIR}/LICENSE.txt Sourcetrail_license)
-set(LICENSE_APP "LicenseInfo(\"Sourcetrail\", \"${VERSION_STRING}\", \"https://github.com/CoatiSoftware/Sourcetrail\", Sourcetrail_license)")
+set(LICENSE_APP "LicenseInfo(\"Sourcetrail\", \"${VERSION_STRING}\", \"https://github.com/ActiveSourcetrail/Sourcetrail\", Sourcetrail_license)")
 
 AddLicense("Boost" "1.83" "http://www.boost.org" "${LICENSEFOLDER}/license_boost.txt")
 AddLicense("catch" "2.13.10" "https://github.com/catchorg/Catch2" "${LICENSEFOLDER}/license_catch.txt")

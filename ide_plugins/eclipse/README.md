@@ -2,4 +2,4 @@
 
 The Eclipse plugin is hosted at GitHub.
 
-Link to the repository: [eSourcetrail](https://github.com/CoatiSoftware/eSourcetrail).
+Link to the repository: [eSourcetrail](https://github.com/ActiveSourcetrail/eSourcetrail).

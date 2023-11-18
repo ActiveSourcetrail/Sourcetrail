@@ -126,14 +126,14 @@ void QtProjectWizardContentSelect::populate(QGridLayout* layout, int& row)
 	m_sourceGroupTypeDescriptions[SOURCE_GROUP_PYTHON_EMPTY] =
 		"<p>Create a new Source Group by defining which Python files will be indexed. This Source "
 		"Group type uses the "
-		"<a href=\"https://github.com/CoatiSoftware/"
+		"<a href=\"https://github.com/ActiveSourcetrail/"
 		"SourcetrailPythonIndexer\">SourcetrailPythonIndexer</a> " +
 		pythonIndexerVersion + "in the background.</p>";
 #endif	  // BUILD_PYTHON_LANGUAGE_PACKAGE
 	m_sourceGroupTypeDescriptions[SOURCE_GROUP_CUSTOM_COMMAND] =
 		"Create a new Source Group executing a custom command on each source file. "
 		"This Source Group type can be used on <a "
-		"href=\"https://github.com/CoatiSoftware/SourcetrailDB\">SourcetrailDB</a> binaries that "
+		"href=\"https://github.com/ActiveSourcetrail/SourcetrailDB\">SourcetrailDB</a> binaries that "
 		"add "
 		"custom language support to Sourcetrail.<br /><br />Current Database Version: " +
 		std::to_string(SqliteIndexStorage::getStorageVersion());

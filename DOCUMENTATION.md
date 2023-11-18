@@ -22,19 +22,19 @@ Note: Sourcetrail currently supports the languages C/C++, Java and Python. Much 
 
 ### C
 
-C support is powered by [Clang 11.0.0](https://clang.llvm.org/). For issues loading C code, please have a look at [Clang language compatibility](https://clang.llvm.org/compatibility.html) or report a bug in our [bug tracker](https://github.com/CoatiSoftware/issues).
+C support is powered by [Clang 11.0.0](https://clang.llvm.org/). For issues loading C code, please have a look at [Clang language compatibility](https://clang.llvm.org/compatibility.html) or report a bug in our [bug tracker](https://github.com/ActiveSourcetrail/issues).
 
 ### C++
 
-C++ support is powered by [Clang 11.0.0](https://clang.llvm.org/). For more Information please visit [Clang C++ Status](https://clang.llvm.org/cxx_status.html). For issues loading C++ code, please have a look at [Clang language compatibility](https://clang.llvm.org/compatibility.html) or report a bug in our [bug tracker](https://github.com/CoatiSoftware/issues).
+C++ support is powered by [Clang 11.0.0](https://clang.llvm.org/). For more Information please visit [Clang C++ Status](https://clang.llvm.org/cxx_status.html). For issues loading C++ code, please have a look at [Clang language compatibility](https://clang.llvm.org/compatibility.html) or report a bug in our [bug tracker](https://github.com/ActiveSourcetrail/issues).
 
 ### Java
 
-Sourcetrail includes support for Java 12 and lower which is powered by [Eclipse JDT](https://github.com/eclipse/eclipse.jdt.core). If you encounter any issues while using Sourcetrail on a Java project, please let us know by providing a minimal example in our [bug tracker](https://github.com/CoatiSoftware/issues).
+Sourcetrail includes support for Java 12 and lower which is powered by [Eclipse JDT](https://github.com/eclipse/eclipse.jdt.core). If you encounter any issues while using Sourcetrail on a Java project, please let us know by providing a minimal example in our [bug tracker](https://github.com/ActiveSourcetrail/issues).
 
 ### Python
 
-Sourcetrail includes support for Python 2 and Python 3 which is powered by our open-source [SourcetrailPythonIndexer](https://github.com/CoatiSoftware/SourcetrailPythonIndexer). If you encounter any issues while using Sourcetrail on a Python project, please let us know by providing a minimal example in our [bug tracker](https://github.com/CoatiSoftware/SourcetrailPythonIndexer/issues).
+Sourcetrail includes support for Python 2 and Python 3 which is powered by our open-source [SourcetrailPythonIndexer](https://github.com/ActiveSourcetrail/SourcetrailPythonIndexer). If you encounter any issues while using Sourcetrail on a Python project, please let us know by providing a minimal example in our [bug tracker](https://github.com/ActiveSourcetrail/SourcetrailPythonIndexer/issues).
 
 
 # Getting Started
@@ -43,7 +43,7 @@ This short introduction will briefly guide you through the project setup and the
 
 ## Starting Up Sourcetrail
 
-Once you've [downloaded](https://github.com/CoatiSoftware/Sourcetrail/releases) Sourcetrail successfully you are ready to run the application. For assistance wth installation, visit the [installation](#installation) section.
+Once you've [downloaded](https://github.com/ActiveSourcetrail/Sourcetrail/releases) Sourcetrail successfully you are ready to run the application. For assistance wth installation, visit the [installation](#installation) section.
 
 > **Tasks:**
 > * Launch Sourcetrail.
@@ -674,7 +674,7 @@ This dialog is shown after indexing was stopped, giving you information about in
 * **Documentation**
     * Opens this documentation of Sourcetrail in your web browser by URL.
 * **Changelog**
-    * Opens the [changelog](https://github.com/CoatiSoftware/Sourcetrail/blob/master/CHANGELOG.md) of Sourcetrail in your web browser by URL.
+    * Opens the [changelog](https://github.com/ActiveSourcetrail/Sourcetrail/blob/master/CHANGELOG.md) of Sourcetrail in your web browser by URL.
 * **Bug Tracker**
     * Opens Sourcetrail's bug tracker in your web browser by URL.
 * **License**
@@ -1348,7 +1348,7 @@ Empty Python Source Groups offer the following configuration options:
 
 ## Custom Command Source Group
 
-In a Custom Command Source Group you can define a set of files and a command line call used to index each of these files. This Source Group type was introduced to integrate custom indexers written with [SourcetrailDB](https://github.com/CoatiSoftware/SourcetrailDB).
+In a Custom Command Source Group you can define a set of files and a command line call used to index each of these files. This Source Group type was introduced to integrate custom indexers written with [SourcetrailDB](https://github.com/ActiveSourcetrail/SourcetrailDB).
 
 Custom Command Source Groups offer the following configuration options:
 
@@ -1364,7 +1364,7 @@ Custom Command Source Groups offer the following configuration options:
 
 In order to make Sourcetrail the perfect partner for your development workflow you can connect Sourcetrail with different code editors. You can find more information on the plugins in Sourcetrail's download package located in the folder `/ide_plugins`. Have a look at the following list of supported code editors to find out what editors are currently supported.
 
-The plugins are Opensource and available on [github](https://github.com/CoatiSoftware/).
+The plugins are Opensource and available on [github](https://github.com/ActiveSourcetrail/).
 
 **Supported Editors:**
 
@@ -1402,7 +1402,7 @@ By using a Sourcetrail plugin for your code editor, you can select a location wi
 
 ### Atom
 
-**Repo**: [https://github.com/CoatiSoftware/atom-sourcetrail](https://github.com/CoatiSoftware/atom-sourcetrail)
+**Repo**: [https://github.com/ActiveSourcetrail/atom-sourcetrail](https://github.com/ActiveSourcetrail/atom-sourcetrail)
 
 **Installation**
 
@@ -1418,7 +1418,7 @@ or `Packages -> Sourcetrail -> Send location to Sourcetrail`
 
 ### CLion/IntelliJ IDEA
 
-**Repo**: [https://github.com/CoatiSoftware/idea-sourcetrail](https://github.com/CoatiSoftware/idea-sourcetrail)
+**Repo**: [https://github.com/ActiveSourcetrail/idea-sourcetrail](https://github.com/ActiveSourcetrail/idea-sourcetrail)
 
 **Installation**
 
@@ -1437,19 +1437,19 @@ bring up the context menu and choose the “Sent Location” option.
 
 ### Eclipse
 
-**Repo**: [https://github.com/CoatiSoftware/eSourcetrail](https://github.com/CoatiSoftware/eSourcetrail)
+**Repo**: [https://github.com/ActiveSourcetrail/eSourcetrail](https://github.com/ActiveSourcetrail/eSourcetrail)
 
 **Installation**
 
 * Updatesite:
 	1. In Eclipse go in the menu to `Help -> Install new Software...`
 	1. Add the Sourcetrail Updatesite
-		* type [https://CoatiSoftware.github.io/eSourcetrail/updatesite](https://CoatiSoftware.github.io/eSourcetrail/updatesite) into the `Work with:` field
+		* type [https://ActiveSourcetrail.github.io/eSourcetrail/updatesite](https://ActiveSourcetrail.github.io/eSourcetrail/updatesite) into the `Work with:` field
 		* or press `Add...` and add the address above
 	1. Select all and finish the next step.
 	1. Eclipse needs to restart and can now communicate with Eclipse.
 * Manually:
-	1. Download this [eSourcetrail-gh-pages.zip](https://github.com/CoatiSoftware/eSourcetrail/archive/gh-pages.zip) and unzip it.
+	1. Download this [eSourcetrail-gh-pages.zip](https://github.com/ActiveSourcetrail/eSourcetrail/archive/gh-pages.zip) and unzip it.
 	1. In Eclipse go in the menu to `Help -> Install new Software...`
 	1. Click the `Add...` Button
 	1. Click the `Local...` Button select the updatesite folder in the unzipped folder
@@ -1464,12 +1464,12 @@ If you want Eclipse to activate a certain element in Sourcetrail, right-click th
 
 ### Emacs
 
-**Repo**: [https://github.com/CoatiSoftware/emacs-sourcetrail](https://github.com/CoatiSoftware/emacs-sourcetrail)
+**Repo**: [https://github.com/ActiveSourcetrail/emacs-sourcetrail](https://github.com/ActiveSourcetrail/emacs-sourcetrail)
 
 **Installation**
 
 * Manually
-	1. Download the sourcetrail.el from [https://github.com/CoatiSoftware/emacs-sourcetrail](https://github.com/CoatiSoftware/emacs-sourcetrail)
+	1. Download the sourcetrail.el from [https://github.com/ActiveSourcetrail/emacs-sourcetrail](https://github.com/ActiveSourcetrail/emacs-sourcetrail)
 	1. In Emacs press `M` + `x` and type in `package-install-file`
 	1. Type in the path to the downloaded sourcetrail.el file
 * Melpa
@@ -1486,11 +1486,11 @@ press `M` + `x` and type in `sourcetrail-mode`
 
 ### Qt Creator
 
-**Repo**: [https://github.com/CoatiSoftware/qtc-sourcetrail](https://github.com/CoatiSoftware/qtc-sourcetrail)
+**Repo**: [https://github.com/ActiveSourcetrail/qtc-sourcetrail](https://github.com/ActiveSourcetrail/qtc-sourcetrail)
 
 **Installation**
 
-1. Download the plugin for your system from [here](https://github.com/CoatiSoftware/qtc-sourcetrail/releases).
+1. Download the plugin for your system from [here](https://github.com/ActiveSourcetrail/qtc-sourcetrail/releases).
 1. Copy the files into the plugin folder where the QtCreator is installed(eg. /usr/lib/qtcreator/plugins)
 	* the plugin path can be found at Help -> System Information... -> PluginsPath
 
@@ -1500,7 +1500,7 @@ If you want QtCreator to activate a certain element in Sourcetrail, click a loca
 
 ### Sublime Text
 
-**Repo**: [https://github.com/CoatiSoftware/sublime-sourcetrail](https://github.com/CoatiSoftware/sublime-sourcetrail)
+**Repo**: [https://github.com/ActiveSourcetrail/sublime-sourcetrail](https://github.com/ActiveSourcetrail/sublime-sourcetrail)
 
 **Installation**
 
@@ -1521,11 +1521,11 @@ If you want Sublime to activate a certain element in Sourcetrail, click a locati
 
 ### Vim
 
-**Repo**: [https://github.com/CoatiSoftware/vim-sourcetrail](https://github.com/CoatiSoftware/vim-sourcetrail)
+**Repo**: [https://github.com/ActiveSourcetrail/vim-sourcetrail](https://github.com/ActiveSourcetrail/vim-sourcetrail)
 
 **Installation**
 
-Please visit the [vim-sourcetrail](https://github.com/CoatiSoftware/vim-sourcetrail) repository on GitHub for details.
+Please visit the [vim-sourcetrail](https://github.com/ActiveSourcetrail/vim-sourcetrail) repository on GitHub for details.
 
 **Use**
 
@@ -1535,7 +1535,7 @@ Use`:help sourcetrail.txt` get get more information about the plugin
 
 ### VS Code
 
-**Repo**: [https://github.com/CoatiSoftware/vsce-sourcetrail](https://github.com/CoatiSoftware/vsce-sourcetrail)
+**Repo**: [https://github.com/ActiveSourcetrail/vsce-sourcetrail](https://github.com/ActiveSourcetrail/vsce-sourcetrail)
 
 **Installation**
 
@@ -1554,7 +1554,7 @@ or type in the Command Palette: `Sourcetrail: Send Location`
 **Download, Reviews:**
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=vs-publisher-1208751.SourcetrailExtension)
 
-**Repo**: [https://github.com/CoatiSoftware/vs-sourcetrail](https://github.com/CoatiSoftware/vs-sourcetrail)
+**Repo**: [https://github.com/ActiveSourcetrail/vs-sourcetrail](https://github.com/ActiveSourcetrail/vs-sourcetrail)
 
 **Installation**
 

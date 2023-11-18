@@ -526,13 +526,13 @@ void QtMainWindow::showErrorHelpMessage()
 void QtMainWindow::showChangelog()
 {
 	QDesktopServices::openUrl(QUrl(
-		QStringLiteral("https://github.com/CoatiSoftware/Sourcetrail/blob/master/CHANGELOG.md")));
+		QStringLiteral("https://github.com/ActiveSourcetrail/Sourcetrail/blob/master/CHANGELOG.md")));
 }
 
 void QtMainWindow::showBugtracker()
 {
 	QDesktopServices::openUrl(
-		QUrl(QStringLiteral("https://github.com/CoatiSoftware/Sourcetrail/issues")));
+		QUrl(QStringLiteral("https://github.com/ActiveSourcetrail/Sourcetrail/issues")));
 }
 
 void QtMainWindow::showLicenses()
