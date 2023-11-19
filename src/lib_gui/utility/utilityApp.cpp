@@ -170,7 +170,7 @@ utility::ProcessOutput utility::executeProcess(
 		boost::asio::async_read(ap, stdOutBuffer, onStdOut);
 		ios.run();
 
-		if (timeout > 0)
+		if (utility::getOsType() != OS_MAC && timeout > 0)
 		{
 			if (waitUntilNoOutput)
 			{
